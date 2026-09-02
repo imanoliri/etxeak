@@ -342,6 +342,16 @@ The MVP-0 implementation is deliberately lightweight and framework-free:
 
 The simulation module does not import Leaflet or browser DOM APIs. Campaign/scenario data remains separate from simulation logic.
 
+### Season-result presentation
+
+`advanceSeason(state)` returns structured presentation metadata in addition to human-readable messages:
+
+- `resourceDeltas` for the six HUD totals (food, wood, stone, livestock, people, etxeak);
+- `activities` identifying map coordinates and worker counts for productive assets/projects worked during that season;
+- the existing `messages` list for results that do not map cleanly to a single resource or location.
+
+The UI renders this without altering simulation state: signed resource deltas in the top bar, 👤 activity markers on the map, and a compact non-blocking message strip. Manual and automatic season passage use the same result object. The old blocking summary modal is no longer part of the normal season loop.
+
 ### Real-time season clock
 
 MVP-0 uses a small real-time clock in `src/main.js` to invoke seasonal turns automatically. The default delay is **7 seconds per season**, configurable by the player from **1–300 seconds**, with pause/resume and manual advancement.
