@@ -60,6 +60,12 @@ export function createGame(scenario) {
     }
   });
 
+  state.people.forEach((person) => {
+    if (canWork(person) && person.occupation === "Unassigned") {
+      person.occupation = chooseAutomaticOccupation(state, person);
+    }
+  });
+
   return state;
 }
 
@@ -77,6 +83,39 @@ export function getCurrentSeason(state) {
 
 export function canWork(person) {
   return person.alive && person.age >= WORK_AGE;
+}
+
+export function chooseAutomaticOccupation(state, person) {
+  if (!person || !canWork(person)) return "Unassigned";
+
+  const residenceId = person.residenceId;
+  const demand = new Map([
+    ["Farmer", state.assets.filter((asset) => asset.residenceId === residenceId && asset.type === "field").length],
+    ["Herder", state.assets.filter((asset) => asset.residenceId === residenceId && asset.type === "pasture").length],
+    ["Forestry", state.assets.filter((asset) => asset.residenceId === residenceId && asset.type === "forest").length],
+    ["Miner", state.assets.filter((asset) => asset.residenceId === residenceId && asset.type === "mine").length],
+    ["Builder", state.projects.length > 0 ? 1 : 0]
+  ]);
+
+  const occupied = new Map();
+  for (const other of getLivingPeople(state)) {
+    if (other.id === person.id || !canWork(other) || other.residenceId !== residenceId) continue;
+    occupied.set(other.occupation, (occupied.get(other.occupation) ?? 0) + 1);
+  }
+
+  const priority = ["Farmer", "Herder", "Forestry", "Miner", "Builder"];
+  let best = "Builder";
+  let bestGap = 0;
+
+  for (const occupation of priority) {
+    const gap = (demand.get(occupation) ?? 0) - (occupied.get(occupation) ?? 0);
+    if (gap > bestGap) {
+      best = occupation;
+      bestGap = gap;
+    }
+  }
+
+  return best;
 }
 
 export function setOccupation(state, personId, occupation) {
@@ -351,7 +390,8 @@ function resolveAnnualDemography(state, messages) {
   livingBefore.forEach((person) => {
     person.age += 1;
     if (person.age === WORK_AGE && person.occupation === "Unassigned") {
-      messages.push(`${person.givenName} reached working age and can now be assigned an occupation.`);
+      person.occupation = chooseAutomaticOccupation(state, person);
+      messages.push(`${person.givenName} reached working age and became a ${person.occupation}.`);
     }
   });
 
