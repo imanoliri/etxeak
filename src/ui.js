@@ -94,7 +94,7 @@ export function renderHud(state) {
     ["Food", state.stores.food],
     ["Wood", state.stores.wood],
     ["Stone", state.stores.stone],
-    ["Livestock", state.stores.livestock],
+    ["Animals", state.stores.livestock],
     ["People", getLivingPeople(state).length],
     ["Etxeak", state.residences.length]
   ];
