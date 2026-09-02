@@ -125,3 +125,26 @@ test("livestock has commerce value 3 and can be traded from pasture-producing fa
   assert.equal(quote.targetValue, 15);
   assert.equal(quote.giveAmount, 15);
 });
+
+
+test("commerce quantity batches scale the exchange while charging transport once", () => {
+  const state = createGame(STARTING_SCENARIOS[0]);
+  const partner = STARTING_SCENARIOS[1];
+  state.stores.stone = 100;
+  state.stores.food = 100;
+
+  const quote = getTradeQuote(state, partner, "stone", "wood", 6);
+  assert.equal(quote.ok, true);
+  assert.equal(quote.receiveAmount, 6);
+  assert.equal(quote.giveAmountPerUnit, 4);
+  assert.equal(quote.giveAmount, 24);
+  assert.equal(quote.targetValue, 60);
+  assert.equal(quote.giveValuePaid, 72);
+
+  const transport = getTransportFoodCost(getTradeDistanceKm(state, partner));
+  const result = tradeWithFamily(state, partner, "stone", "wood", 6);
+  assert.equal(result.ok, true);
+  assert.equal(state.stores.stone, 76);
+  assert.equal(state.stores.wood, STARTING_SCENARIOS[0].stores.wood + 6);
+  assert.equal(state.stores.food, 100 - transport);
+});
