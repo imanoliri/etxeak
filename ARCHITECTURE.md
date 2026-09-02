@@ -350,7 +350,7 @@ The simulation module does not import Leaflet or browser DOM APIs. Campaign/scen
 - `activities` identifying map coordinates and worker counts for productive assets/projects worked during that season;
 - the existing `messages` list for results that do not map cleanly to a single resource or location.
 
-The UI renders this without altering simulation state: signed resource deltas in the top bar, 👤 activity markers on the map, and a compact non-blocking message strip. Manual and automatic season passage use the same result object. The old blocking summary modal is no longer part of the normal season loop.
+The UI renders this without altering simulation state: signed resource deltas in the top bar, 👤 activity markers on the map, and a compact non-blocking notification strip. The notification strip filters out routine economic messages (production, consumption, sowing/tending/harvest, and ordinary construction progress) because those are already visible through resource deltas and activity markers. It is reserved for notable events and warnings such as births, deaths, shortages, work-age transitions, and completed projects. Manual and automatic season passage use the same result object. The old blocking summary modal is no longer part of the normal season loop.
 
 ### Real-time season clock
 
