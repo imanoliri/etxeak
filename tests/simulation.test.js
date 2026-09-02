@@ -87,3 +87,26 @@ test("working-age unassigned people receive a sensible automatic occupation", ()
   assert.notEqual(occupation, "Unassigned");
   assert.ok(["Farmer", "Herder", "Forestry", "Miner", "Builder"].includes(occupation));
 });
+
+
+test("season summary exposes resource deltas for the HUD", () => {
+  const state = createGame(STARTING_SCENARIOS[0]);
+  const before = state.stores.food;
+
+  const summary = advanceSeason(state);
+
+  assert.equal(summary.season, "Spring");
+  assert.equal(summary.resourceDeltas.food, state.stores.food - before);
+  assert.equal(summary.resourceDeltas.people, 0);
+  assert.equal(summary.resourceDeltas.etxeak, 0);
+});
+
+test("season summary records worked map locations", () => {
+  const state = createGame(STARTING_SCENARIOS[0]);
+  const summary = advanceSeason(state);
+
+  assert.ok(summary.activities.length > 0);
+  assert.ok(summary.activities.every((activity) => Array.isArray(activity.coords)));
+  assert.ok(summary.activities.every((activity) => activity.workers >= 1));
+  assert.ok(summary.activities.some((activity) => activity.targetType === "asset"));
+});
