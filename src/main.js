@@ -1,5 +1,6 @@
 import { STARTING_SCENARIOS } from "./scenarios.js";
 import { tradeWithFamily } from "./commerce.js";
+import { establishEtxeWithMarriage } from "./households.js";
 import {
   advanceSeason,
   createGame,
@@ -24,6 +25,7 @@ import {
   openCommercePanel,
   openBuildPanel,
   openFamilyPanel,
+  openMarriagePanel,
   openResidencePanel,
   renderHud,
   renderScenarioSelection,
@@ -48,18 +50,19 @@ let deadlineMs = null;
 let timerId = null;
 let lastSeasonSummary = null;
 let commerceMode = false;
+let pendingEtxeOpening = null;
 
 const mapContext = createMap(handleMapClick);
 
 bindStaticActions({
   onFamily: () => {
     if (!state) return;
-    exitCommerceMode();
+    clearExternalFamilyMode();
     openFamilyPanel(state, familyHandlers);
   },
   onBuild: () => {
     if (!state) return;
-    exitCommerceMode();
+    clearExternalFamilyMode();
     openBuildPanel(state, beginPlacement);
   },
   onCommerce: toggleCommerce,
@@ -81,6 +84,7 @@ function startScenario(scenarioId) {
   state = createGame(scenario);
   lastSeasonSummary = null;
   commerceMode = false;
+  pendingEtxeOpening = null;
   setCommerceActive(false);
   clearCommercePartners(mapContext);
   clearScenarioPreviews(mapContext);
@@ -100,7 +104,7 @@ function refresh() {
 function refreshMap() {
   if (!state) return;
   renderGameState(mapContext, state, {
-    onResidence: (residenceId) => openResidencePanel(state, residenceId),
+    onResidence: (residenceId) => openResidencePanel(state, residenceId, residenceHandlers),
     onAsset: (assetId) => openAssetPanel(state, assetId),
     seasonSummary: lastSeasonSummary
   });
@@ -118,14 +122,88 @@ const familyHandlers = {
       refresh();
       openFamilyPanel(state, familyHandlers);
     } else {
-      showToast("That etxe is full.");
+      showToast("That etxe is full or has not been opened yet.");
       openFamilyPanel(state, familyHandlers);
     }
   }
 };
 
+const residenceHandlers = {
+  onBeginOpening(residenceId, manId) {
+    beginEtxeOpening(residenceId, manId);
+  }
+};
+
+function beginEtxeOpening(residenceId, manId) {
+  if (!state) return;
+
+  cancelPlacement();
+  commerceMode = false;
+  pendingEtxeOpening = { residenceId, manId };
+  setCommerceActive(true);
+  showCommercePartners(
+    mapContext,
+    STARTING_SCENARIOS,
+    state.scenarioId,
+    state,
+    openMarriagePartner
+  );
+  showToast("Choose the family the wife will come from.");
+}
+
+function openMarriagePartner(scenarioId) {
+  if (!state || !pendingEtxeOpening) return;
+
+  const partner = STARTING_SCENARIOS.find(
+    (scenario) =>
+      scenario.id === scenarioId && scenario.id !== state.scenarioId
+  );
+  if (!partner) return;
+
+  openMarriagePanel(
+    state,
+    pendingEtxeOpening.residenceId,
+    pendingEtxeOpening.manId,
+    partner,
+    { onConfirmMarriage: handleConfirmMarriage }
+  );
+}
+
+function handleConfirmMarriage(
+  residenceId,
+  manId,
+  scenarioId,
+  paymentResource
+) {
+  if (!state) return;
+
+  const partner = STARTING_SCENARIOS.find(
+    (scenario) =>
+      scenario.id === scenarioId && scenario.id !== state.scenarioId
+  );
+  if (!partner) return;
+
+  const result = establishEtxeWithMarriage(
+    state,
+    residenceId,
+    manId,
+    partner,
+    paymentResource
+  );
+  showToast(result.message);
+  if (!result.ok) return;
+
+  pendingEtxeOpening = null;
+  commerceMode = false;
+  setCommerceActive(false);
+  clearCommercePartners(mapContext);
+  refresh();
+  focusOn(mapContext, result.residence.coords, 13);
+  openResidencePanel(state, residenceId, residenceHandlers);
+}
+
 function beginPlacement(type) {
-  exitCommerceMode();
+  clearExternalFamilyMode();
   placementType = type;
   showPlacement(type);
 }
@@ -155,24 +233,32 @@ function handleMapClick(coords) {
 
 function toggleCommerce() {
   if (!state) return;
-  if (commerceMode) {
-    exitCommerceMode();
+  if (commerceMode || pendingEtxeOpening) {
+    clearExternalFamilyMode();
     return;
   }
 
   cancelPlacement();
   commerceMode = true;
   setCommerceActive(true);
-  showCommercePartners(mapContext, STARTING_SCENARIOS, state.scenarioId, state, openTradePartner);
+  showCommercePartners(
+    mapContext,
+    STARTING_SCENARIOS,
+    state.scenarioId,
+    state,
+    openTradePartner
+  );
   showToast("Commerce: select another family location on the map.");
 }
 
-function exitCommerceMode(refocus = true) {
-  if (!commerceMode) return;
+function clearExternalFamilyMode(refocus = true) {
   commerceMode = false;
+  pendingEtxeOpening = null;
   setCommerceActive(false);
   clearCommercePartners(mapContext);
-  if (refocus && state?.residences?.[0]) focusOn(mapContext, state.residences[0].coords, 13);
+  if (refocus && state?.residences?.[0]) {
+    focusOn(mapContext, state.residences[0].coords, 13);
+  }
 }
 
 function openTradePartner(scenarioId) {
