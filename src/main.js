@@ -265,7 +265,12 @@ function openTradePartner(scenarioId) {
   if (!state || !commerceMode) return;
   const partner = STARTING_SCENARIOS.find((scenario) => scenario.id === scenarioId && scenario.id !== state.scenarioId);
   if (!partner) return;
-  openCommercePanel(state, partner, { onTrade: handleTrade });
+  openCommercePanel(
+    state,
+    partner,
+    { onTrade: handleTrade },
+    { giveResource, receiveResource }
+  );
 }
 
 function handleTrade(scenarioId, giveResource, receiveResource) {
