@@ -12,10 +12,20 @@ import {
   TRADEABLE_RESOURCES,
   TRADE_RATIO,
   getResourceLabel,
+  getResourceValue,
   getScenarioProducedResources,
   getTradeDistanceKm,
+  getTradeQuote,
+  getTradeYearsWithFamily,
   getTransportFoodCost
 } from "./commerce.js";
+import {
+  getBridePaymentQuote,
+  getBrideRequiredValue,
+  getEligibleEtxeFounders,
+  getMarriageCandidate,
+  getMarriagePaymentResources
+} from "./households.js";
 
 const els = {
   title: document.querySelector("#game-title"),
@@ -274,7 +284,8 @@ function personRow(state, person) {
       const capacity = getResidenceCapacity(residence);
       const isCurrent = residence.id === person.residenceId;
       const full = residents >= capacity && !isCurrent;
-      return `<option value="${residence.id}" ${isCurrent ? "selected" : ""} ${full ? "disabled" : ""}>${residence.name} (${residents}/${capacity})${full ? " — full" : ""}</option>`;
+      const closed = !residence.opened && !isCurrent;
+      return `<option value="${residence.id}" ${isCurrent ? "selected" : ""} ${full || closed ? "disabled" : ""}>${residence.name} (${residents}/${capacity})${closed ? " — unopened" : full ? " — full" : ""}</option>`;
     })
     .join("");
 
@@ -284,7 +295,7 @@ function personRow(state, person) {
         <strong>${person.givenName} ${person.surname}</strong>
         <span>${person.age}</span>
       </div>
-      <span class="person-meta">${person.role === "head" ? "Household head" : child ? "Child" : "Family member"}</span>
+      <span class="person-meta">${person.headOfResidenceId ? "Head of " + (state.residences.find((residence) => residence.id === person.headOfResidenceId)?.name ?? "etxe") : child ? "Child" : "Family member"}</span>
       <div class="person-controls">
         <label>
           Occupation
@@ -308,23 +319,30 @@ export function openCommercePanel(state, partnerScenario, handlers) {
   const produced = getScenarioProducedResources(partnerScenario);
   const distanceKm = getTradeDistanceKm(state, partnerScenario);
   const transportFoodCost = getTransportFoodCost(distanceKm);
+  const tradeYears = getTradeYearsWithFamily(state, partnerScenario.id);
 
   els.panelKicker.textContent = "COMMERCE";
   els.panelTitle.textContent = partnerScenario.familyName;
 
   if (produced.length === 0) {
-    els.panelContent.innerHTML = '<section class="panel-section"><p class="muted">This family has no tradable production.</p></section>';
+    els.panelContent.innerHTML =
+      '<section class="panel-section"><p class="muted">This family has no tradable production.</p></section>';
     els.sidePanel.classList.remove("is-hidden");
     return;
   }
 
   const defaultReceive = produced[0];
-  const defaultGive = TRADEABLE_RESOURCES.find((resource) => resource !== defaultReceive) ?? TRADEABLE_RESOURCES[0];
-  const giveOptions = TRADEABLE_RESOURCES.map((resource) =>
-    `<option value="${resource}" ${resource === defaultGive ? "selected" : ""}>${getResourceLabel(resource)} (${state.stores[resource] ?? 0})</option>`
+  const defaultGive =
+    TRADEABLE_RESOURCES.find((resource) => resource !== defaultReceive) ??
+    TRADEABLE_RESOURCES[0];
+
+  const giveOptions = TRADEABLE_RESOURCES.map(
+    (resource) =>
+      `<option value="${resource}" ${resource === defaultGive ? "selected" : ""}>${getResourceLabel(resource)} (${state.stores[resource] ?? 0}) · value ${getResourceValue(resource)}</option>`
   ).join("");
-  const receiveOptions = produced.map((resource) =>
-    `<option value="${resource}">${getResourceLabel(resource)}</option>`
+  const receiveOptions = produced.map(
+    (resource) =>
+      `<option value="${resource}">${getResourceLabel(resource)} · value ${getResourceValue(resource)}</option>`
   ).join("");
 
   els.panelContent.innerHTML = `
@@ -333,11 +351,12 @@ export function openCommercePanel(state, partnerScenario, handlers) {
         <strong>${partnerScenario.placeName}</strong>
         <span>${distanceKm.toFixed(1)} km from your nearest etxe</span>
         <span>Produces: ${produced.map((resource) => getResourceLabel(resource)).join(", ")}</span>
+        <span>Trade relationship: ${tradeYears} year${tradeYears === 1 ? "" : "s"}</span>
       </div>
     </section>
     <section class="panel-section">
       <h3>Trade</h3>
-      <p class="muted">Exchange ${TRADE_RATIO}:1. Each trade also costs ${transportFoodCost} food for transport (${getResourceLabel("food").toLowerCase()} per started 50 km).</p>
+      <p class="muted">Resource values: food 1 · wood 2 · stone 3. Commerce costs ${TRADE_RATIO}× the value received, plus ${transportFoodCost} food for transport (1 per started 50 km). If the chosen payment resource cannot match the value exactly, you pay the next whole unit.</p>
       <div class="trade-controls">
         <label>Give<select id="trade-give">${giveOptions}</select></label>
         <label>Receive<select id="trade-receive">${receiveOptions}</select></label>
@@ -353,18 +372,42 @@ export function openCommercePanel(state, partnerScenario, handlers) {
   const confirm = els.panelContent.querySelector("#trade-confirm");
 
   const updateQuote = () => {
-    const give = giveSelect.value;
-    const receive = receiveSelect.value;
-    const totalFood = transportFoodCost + (give === "food" ? TRADE_RATIO : 0);
-    quote.textContent = give === receive
-      ? "Choose two different resources."
-      : `Give ${TRADE_RATIO} ${getResourceLabel(give).toLowerCase()} + ${transportFoodCost} food transport → 1 ${getResourceLabel(receive).toLowerCase()}. ${give === "food" ? `Total food cost: ${totalFood}.` : ""}`;
-    confirm.disabled = give === receive;
+    const current = getTradeQuote(
+      state,
+      partnerScenario,
+      giveSelect.value,
+      receiveSelect.value
+    );
+
+    if (!current.ok) {
+      quote.textContent = current.message;
+      confirm.disabled = true;
+      return;
+    }
+
+    const overpay =
+      current.overpayValue > 0
+        ? ` · paid value ${current.giveValuePaid} because ${current.targetValue} cannot be matched exactly`
+        : "";
+    const totalFood =
+      current.transportFoodCost +
+      (giveSelect.value === "food" ? current.giveAmount : 0);
+
+    quote.textContent =
+      `Give ${current.giveAmount} ${getResourceLabel(giveSelect.value).toLowerCase()} (target value ${current.targetValue}${overpay}) + ${current.transportFoodCost} food transport → 1 ${getResourceLabel(receiveSelect.value).toLowerCase()}.` +
+      (giveSelect.value === "food" ? ` Total food cost: ${totalFood}.` : "");
+    confirm.disabled = false;
   };
 
   giveSelect.addEventListener("change", updateQuote);
   receiveSelect.addEventListener("change", updateQuote);
-  confirm.addEventListener("click", () => handlers.onTrade(partnerScenario.id, giveSelect.value, receiveSelect.value));
+  confirm.addEventListener("click", () =>
+    handlers.onTrade(
+      partnerScenario.id,
+      giveSelect.value,
+      receiveSelect.value
+    )
+  );
   updateQuote();
   els.sidePanel.classList.remove("is-hidden");
 }
@@ -423,7 +466,7 @@ function buildButton(type, state) {
   `;
 }
 
-export function openResidencePanel(state, residenceId) {
+export function openResidencePanel(state, residenceId, handlers = {}) {
   const residence = state.residences.find((entry) => entry.id === residenceId);
   if (!residence) return;
 
@@ -432,9 +475,49 @@ export function openResidencePanel(state, residenceId) {
   );
   const capacity = getResidenceCapacity(residence);
   const assets = state.assets.filter((asset) => asset.residenceId === residence.id);
+  const heads = (residence.headPersonIds ?? [])
+    .map((personId) => state.people.find((person) => person.id === personId && person.alive))
+    .filter(Boolean);
 
-  els.panelKicker.textContent = "ETXE";
+  els.panelKicker.textContent = residence.opened ? "ETXE" : "NEW ETXE";
   els.panelTitle.textContent = residence.name;
+
+  if (!residence.opened) {
+    const eligible = getEligibleEtxeFounders(state);
+    const options = eligible
+      .map(
+        (person) =>
+          `<option value="${person.id}">${person.givenName} ${person.surname} · ${person.age} · ${person.occupation}</option>`
+      )
+      .join("");
+
+    els.panelContent.innerHTML = `
+      <section class="panel-section">
+        <div class="etxe-capacity-card">
+          <strong>Built, not yet opened</strong>
+          <span>This etxe needs a founding couple before people can move into it.</span>
+          <small>Capacity: ${capacity} · Work radius: ${ETXE_WORK_RADIUS_KM} km</small>
+        </div>
+      </section>
+      <section class="panel-section">
+        <h3>Open this etxe</h3>
+        <p class="muted">Choose a working-age unmarried man from your family who is not already head of another etxe. Then choose a wife family from the regional commerce map.</p>
+        ${eligible.length
+          ? `<label>Founding man<select id="etxe-founder">${options}</select></label>
+             <button id="choose-wife-family" class="primary wide" type="button">Choose wife family</button>`
+          : '<p class="muted">No eligible man is currently available.</p>'}
+      </section>
+    `;
+
+    const button = els.panelContent.querySelector("#choose-wife-family");
+    const select = els.panelContent.querySelector("#etxe-founder");
+    button?.addEventListener("click", () =>
+      handlers.onBeginOpening?.(residence.id, select.value)
+    );
+    els.sidePanel.classList.remove("is-hidden");
+    return;
+  }
+
   els.panelContent.innerHTML = `
     <section class="panel-section">
       <div class="etxe-capacity-card">
@@ -442,6 +525,10 @@ export function openResidencePanel(state, residenceId) {
         <span>${residents.length >= capacity ? "Full — no births or additional residents" : `${capacity - residents.length} spaces available`}</span>
         <small>Work radius: ${ETXE_WORK_RADIUS_KM} km</small>
       </div>
+    </section>
+    <section class="panel-section">
+      <h3>Heads</h3>
+      ${heads.map((person) => `<div class="asset-row"><strong>${person.givenName} ${person.surname}</strong><span class="muted">${person.age} · ${person.occupation}</span></div>`).join("") || '<p class="muted">No heads recorded.</p>'}
     </section>
     <section class="panel-section">
       <h3>Residents</h3>
@@ -452,6 +539,87 @@ export function openResidencePanel(state, residenceId) {
       ${assets.map((asset) => `<div class="asset-row"><strong>${asset.name}</strong><span class="muted">${asset.type}</span></div>`).join("") || '<p class="muted">No attached productive assets.</p>'}
     </section>
   `;
+  els.sidePanel.classList.remove("is-hidden");
+}
+
+export function openMarriagePanel(
+  state,
+  residenceId,
+  manId,
+  partnerScenario,
+  handlers = {}
+) {
+  const residence = state.residences.find((entry) => entry.id === residenceId);
+  const man = getLivingPeople(state).find((person) => person.id === manId);
+  const candidate = getMarriageCandidate(state, partnerScenario);
+  if (!residence || !man || !candidate) return;
+
+  const tradeYears = getTradeYearsWithFamily(state, partnerScenario.id);
+  const requiredValue = getBrideRequiredValue(state, partnerScenario.id);
+  const paymentResources = getMarriagePaymentResources();
+
+  els.panelKicker.textContent = "OPEN ETXE";
+  els.panelTitle.textContent = partnerScenario.familyName;
+
+  const paymentOptions = paymentResources
+    .map(
+      (resource) =>
+        `<option value="${resource}">${getResourceLabel(resource)} (${state.stores[resource] ?? 0}) · value ${getResourceValue(resource)}</option>`
+    )
+    .join("");
+
+  els.panelContent.innerHTML = `
+    <section class="panel-section">
+      <div class="trade-summary">
+        <strong>${candidate.givenName} ${candidate.surname}</strong>
+        <span>${candidate.age} years · from ${partnerScenario.familyName}</span>
+        <span>Will found ${residence.name} with ${man.givenName} ${man.surname}</span>
+      </div>
+    </section>
+    <section class="panel-section">
+      <h3>Marriage payment</h3>
+      <p class="muted">Base value 10, reduced by 1 for each distinct year you have traded with this family. You have traded in ${tradeYears} year${tradeYears === 1 ? "" : "s"}, so the required value is ${requiredValue}. Minimum value is 3.</p>
+      <p class="muted">Food = 1 · wood = 2 · stone = 3. If the chosen resource cannot match the required value exactly, the next whole unit is charged.</p>
+      <label>Pay with<select id="marriage-payment">${paymentOptions}</select></label>
+      <div id="marriage-quote" class="trade-quote"></div>
+      <button id="marriage-confirm" class="primary wide" type="button">Open etxe and marry</button>
+    </section>
+  `;
+
+  const payment = els.panelContent.querySelector("#marriage-payment");
+  const quoteEl = els.panelContent.querySelector("#marriage-quote");
+  const confirm = els.panelContent.querySelector("#marriage-confirm");
+
+  const updateQuote = () => {
+    const quote = getBridePaymentQuote(
+      state,
+      partnerScenario.id,
+      payment.value
+    );
+    if (!quote.ok) {
+      quoteEl.textContent = quote.message;
+      confirm.disabled = true;
+      return;
+    }
+    const extra =
+      quote.overpayValue > 0
+        ? ` Exact value cannot be matched, so ${quote.paidValue} value is paid.`
+        : "";
+    quoteEl.textContent =
+      `Pay ${quote.amount} ${getResourceLabel(payment.value).toLowerCase()} for required value ${quote.requiredValue}.${extra}`;
+    confirm.disabled = !quote.affordable;
+  };
+
+  payment.addEventListener("change", updateQuote);
+  confirm.addEventListener("click", () =>
+    handlers.onConfirmMarriage?.(
+      residenceId,
+      manId,
+      partnerScenario.id,
+      payment.value
+    )
+  );
+  updateQuote();
   els.sidePanel.classList.remove("is-hidden");
 }
 
