@@ -4,6 +4,8 @@ import assert from "node:assert/strict";
 import { STARTING_SCENARIOS } from "../src/scenarios.js";
 import {
   advanceSeason,
+  annualBirthChance,
+  annualDeathChance,
   chooseAutomaticOccupation,
   createGame,
   ETXE_CAPACITY,
@@ -193,4 +195,59 @@ test("new etxe placement is limited to the work radius of an existing etxe", () 
   const state = createGame(STARTING_SCENARIOS[1]);
   const result = startProject(state, "etxe", [42.9, -2.35]);
   assert.equal(result.ok, false);
+});
+
+
+test("builders return to their previous occupation when the last project finishes", () => {
+  const state = createGame(STARTING_SCENARIOS[0]);
+  const worker = state.people.find(
+    (person) => person.alive && person.age >= 12 && person.occupation === "Farmer" && !person.headOfResidenceId
+  );
+  assert.ok(worker);
+
+  assert.equal(setOccupation(state, worker.id, "Builder"), true);
+  assert.equal(worker.lastNonBuilderOccupation, "Farmer");
+
+  const result = startProject(state, "field", [43.265, -1.973]);
+  assert.equal(result.ok, true);
+  result.project.workRequired = 1;
+
+  advanceSeason(state);
+
+  assert.equal(state.projects.length, 0);
+  assert.equal(worker.occupation, "Farmer");
+});
+
+test("spring sowing failures are stored on fields for map warning rings", () => {
+  const state = createGame(STARTING_SCENARIOS[0]);
+  state.stores.food = 0;
+
+  const summary = advanceSeason(state);
+  const failedFields = state.assets.filter(
+    (asset) => asset.type === "field" && asset.state.sowingFailed
+  );
+
+  assert.ok(failedFields.length >= 1);
+  assert.ok(
+    failedFields.every((asset) => ["no-seed", "no-farmer"].includes(asset.state.sowingFailureReason))
+  );
+  assert.ok(summary.messages.some((message) => message.includes("could not be sown")));
+});
+
+test("food shortages accumulate yearly hunger pressure", () => {
+  const state = createGame(STARTING_SCENARIOS[0]);
+  state.stores.food = 0;
+
+  const summary = advanceSeason(state);
+
+  assert.equal(state.foodSecurity.shortageSeasonsThisYear, 1);
+  assert.ok(state.foodSecurity.shortageFoodThisYear > 0);
+  assert.ok(summary.messages.some((message) => message.includes("mortality risk is higher")));
+});
+
+test("food shortages raise mortality risk and reduce birth chance", () => {
+  assert.ok(annualDeathChance(30, 2) > annualDeathChance(30, 0));
+  assert.ok(annualDeathChance(70, 2) > annualDeathChance(70, 0));
+  assert.ok(annualBirthChance(2) < annualBirthChance(0));
+  assert.equal(annualBirthChance(4), 0);
 });
