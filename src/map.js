@@ -31,7 +31,7 @@ export function createMap(onMapClick) {
 
   const topo = window.L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
     maxNativeZoom: 17,
-    maxZoom: 17,
+    maxZoom: 19,
     detectRetina: true,
     attribution:
       'Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, SRTM | Map style © <a href="https://opentopomap.org">OpenTopoMap</a>'
