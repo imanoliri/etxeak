@@ -6,11 +6,23 @@
 
 Etxeak is a historical strategy and simulation game about the long life of a Basque **etxe**: not only a physical house, but a household, estate, family identity, and continuity across generations.
 
-The player does not rule a kingdom or conquer a map. The player guides a house and its descendants through changing historical conditions. Family members are born, grow up, marry, inherit, migrate, join institutions, form new branches, and die. Land, rights, obligations, reputation, knowledge, relationships, and memories can outlive any individual person.
+The player does not rule a kingdom or conquer a map. The player guides a house and its descendants through changing historical conditions. Family members are born, grow up, marry, inherit, migrate, form new branches, and die. Land, rights, obligations, reputation, knowledge, relationships, and memories can outlive any individual person.
 
 The central question is:
 
 > **What does this house become as the world around it changes?**
+
+## How the game plays
+
+Time advances in **seasons**. Different parts of the household economy matter at different moments of the year: sowing, livestock work, construction, harvest, slaughter and preservation, winter consumption, and other campaign-specific activities.
+
+At the start of a season the game presents the state of the household, its people, assets, stores, current work, relationships, and active projects. Routine labour is assigned automatically. The player intervenes where it matters: changing occupations, committing labour to a construction project, arranging a marriage, deciding who migrates, dividing property, founding a new household, or responding to an important historical event.
+
+The season then resolves production, consumption, construction progress, demographic and social changes, and events. Four seasonal turns form a year, with an annual summary showing how the house has changed.
+
+Over decades, children become workers and adults, people marry or leave, households split, new houses are founded, heads die, property is inherited, and the genealogy expands. Population growth is therefore **organic**, not an abstract settlement-growth statistic.
+
+The player manages a house rather than micromanaging every person. Named household heads and other important adults are foregrounded, while children and ordinary members continue to live and work through the simulation unless the player needs to intervene.
 
 ## Core design pillars
 
@@ -18,9 +30,15 @@ The central question is:
 
 The persistent unit of play is the etxe. Its inhabitants change over time, but the house can accumulate land, buildings, rights, debts, livestock, tools, reputation, relationships, and history.
 
+A social **household**, its physical **dwelling**, and its **productive assets** are separate things in the simulation. A household may move, a building may outlive its inhabitants, and an estate may contain fields, livestock, woodland rights, mines, workshops, or other resources.
+
 ### People and kinship
 
-Family members are individual people with age, roles, skills, relationships, and life histories. Marriage, descent, inheritance, alliances, migration, and branching households create a living kinship network.
+Family members are persistent individual people with age, roles, skills, relationships, and life histories. Marriage, descent, inheritance, alliances, migration, and branching households create a living kinship network.
+
+Households have named adult heads. For the initial design, a household can be displayed using both heads' surnames, for example **Irizar Etxezarreta**, while historical naming rules remain configurable by period and campaign.
+
+Children appear in the genealogy from birth but are not miniature adult workers. They gradually gain work capacity, become adults under period-appropriate rules, marry, migrate, inherit, or found new branches.
 
 ### Land and ecology
 
@@ -30,9 +48,23 @@ The game uses real geography. Rivers, valleys, forests, pastures, fields, routes
 
 Food, livestock, planting, harvests, forestry, travel, construction, and household work follow a seasonal rhythm. Household labour is finite, so every choice has an opportunity cost.
 
+People normally retain occupations over time. The game automatically assigns sensible work according to occupation, skill, season, household need, and available workplaces, while allowing the player to override important assignments.
+
+### Production and construction
+
+Productive assets require actual workers. Fields, herds, mines, forges, mills, woodland, and later port facilities do not generate output by themselves.
+
+New farmland, dwellings, mines, workshops, and infrastructure are **projects** that consume labour and materials over seasons or years. Construction is never an instant purchase.
+
+### Marriage, residence, and migration
+
+Marriage is also a household decision. A spouse may join the husband's existing household, join the wife's household, or the couple may establish a new household depending on inheritance, resources, space, local practice, and opportunity.
+
+Family members may also migrate temporarily or permanently for work, apprenticeship, marriage, service, trade, or lack of land. They remain part of the genealogy even after leaving the original household.
+
 ### Inheritance and succession
 
-Property does not duplicate when someone dies. Succession determines who receives land, rights, responsibilities, and the continuity of the house, while other relatives may marry out, migrate, enter institutions, or establish new branches.
+Property does not duplicate when someone dies or a household divides. Succession determines who receives land, rights, responsibilities, and the continuity of the house, while other relatives may marry out, migrate, enter institutions, or establish new branches.
 
 ### Historical change as pressure and opportunity
 
@@ -68,24 +100,87 @@ Campaigns are grounded in real regions and historical periods. A campaign may sp
 
 Different campaigns can explore different transformations of the historical Basque world while reusing the same generational simulation.
 
-## First campaign / MVP: Urumea, c. 1100
+## MVP-0: One House
 
-The first playable campaign is set in the **Urumea valley around 1100**.
+Before the full Urumea campaign, Etxeak starts with a deliberately smaller playable prototype: **MVP-0: One House**.
 
-The player begins with one household of roughly **6–10 people**, some cultivated land, animals, access to surrounding resources such as forest or pasture, and relationships with nearby households.
+The map covers the chosen Gipuzkoa / adjoining northern Navarre region around the Urumea campaign area, but **only one family exists in the simulation at a time**. The first implementation is a full-screen interactive topographic map, approximately bounded by **42.88–43.48° N and 2.42–1.65° W**. At the start of a game, the player chooses one of several predefined starting families. Each starting family has its own:
 
-The first MVP deliberately focuses on five systems:
+- name and household members;
+- starting location;
+- population and age structure;
+- dwelling(s);
+- fields, livestock, woodland, mines, workshops, or other starting assets;
+- stored resources;
+- occupations and available labour.
 
-1. **People** — household members age, work, form relationships, and die.
-2. **Kinship** — family relationships, marriage, descent, and neighbouring households.
-3. **Land** — real places and access to fields, pasture, woodland, and river resources.
-4. **Seasonal food and labour** — production, consumption, work allocation, and winter survival.
-5. **Succession** — inheritance, continuity of the etxe, and the beginnings of branching family lines.
+The unchosen families are not simulated as AI households. They serve as **static external contacts** for commerce and for sourcing a wife when opening a newly built etxe.
 
-If these systems can naturally create stories such as *a marriage made for pasture access reshaping inheritance two generations later*, the core of Etxeak is working.
+### Current playable slice
+
+The current MVP-0 branch already supports:
+
+- choosing one of four provisional starting families;
+- viewing the chosen family's etxe and productive assets on the real map;
+- viewing the family's genealogy and parent/child relationships;
+- automatically assigning an occupation when children reach working age, with player overrides;
+- changing working-age family members' occupations;
+- advancing automatically through Spring, Summer, Autumn, and Winter on a configurable timer (7 seconds by default), with pause/play and manual advance controls;
+- sowing, tending, harvesting, herding, forestry, mining, seasonal consumption, autumn slaughter, and visible failed-sowing warnings only for missing seed reserves; unavailable Farmers leave fields unworked without a failure notification;
+- deterministic yearly aging, simple births, and deaths using placeholder prototype rates; yearly food shortages now raise mortality risk and reduce the chance of births;
+- starting multi-season projects for a new etxe or a new field;
+- completing construction through Builder labour, with builders automatically returning to their remembered previous occupation when no construction projects remain;
+- moving family members between completed etxeak;
+- opening Commerce mode, automatically zooming out to the other family locations, and trading with them using equal-value barter (food 1, wood 2, stone 3, livestock 3), upward rounding of whole payment units, and a separate distance food cost;
+- opening a newly built etxe by choosing an eligible working-age unmarried man, selecting a wife family on the same regional zoom-out, paying the marriage value, and moving the founding couple into the new etxe.
+
+The starting names, demographic rates, production yields, costs, and initial balances are **prototype gameplay values**, not final historical claims. They require historical calibration before the campaign is considered historically representative.
+
+MVP-0 is about proving the household economy and expansion loop:
+
+**choose family → assign/adjust work → advance seasons → produce/consume resources → build/develop assets → move family members → found additional etxeak → repeat**
+
+Included in MVP-0:
+
+1. **Seasonal turns** with different agricultural and productive activities.
+2. **One simulated family/lineage** with persistent individual people.
+3. **Organic aging and population change** within that family.
+4. **Occupations and automatic labour assignment**, with player overrides.
+5. **Resource production and consumption** from explicit assets.
+6. **Construction and land-development projects** that take labour, materials, and time.
+7. **Multiple player-controlled residences/etxeak** belonging to the same family.
+8. **Moving family members between etxeak** and assigning them to work there.
+9. **Real map locations** determining where buildings and productive assets exist.
+10. **Basic commerce** with static external family locations: resources exchange at equal intrinsic value (food = 1, wood = 2, stone = 3, livestock = 3). The total received value is divided by the chosen payment resource's value and rounded upward to whole units, so any mismatch is a loss to the player. Transport is separate and consumes 1 food per started 50 km.
+11. **Etxe founding marriage**: a completed etxe stays unopened until an eligible working-age unmarried man who is not already an etxe head is chosen and a wife is obtained from another static family. The marriage costs value 10 minus 1 for every distinct year the player has traded with that family, with a minimum value of 3; payment uses the same resource values and rounds upward.
+
+Explicitly excluded from MVP-0:
+
+- other simulated families;
+- diplomacy, reputation, favours, feuds, or social interaction;
+- political or religious institutions;
+- succession disputes and complex inheritance;
+- autonomous cadet lineages;
+- historical-event systems beyond what is required for the basic seasonal economy.
+
+The purpose of MVP-0 is narrower than the eventual game: prove that **one simulated family living, working, building, expanding, redistributing its people, and using simple external commerce across a real landscape is already a satisfying simulation**.
+
+The fuller **Urumea MVP** comes later and adds other households, kinship between families, marriage, migration networks, inheritance, and social/historical interaction.
+
+## Documentation
+
+- [ARCHITECTURE.md](ARCHITECTURE.md) — simulation architecture and domain model
+- [FEATURES.md](FEATURES.md) — first-MVP design baseline
+- [FUTURE.md](FUTURE.md) — deliberately deferred ideas
+- [AGENTS.md](AGENTS.md) — instructions for coding agents
 
 ## Long-term scope
 
 Later systems can include social obligations, tithes and rents, reputation and status, churches and monasteries, towns, mills, ironworking, trade, powerful lineages, political change, new crops, education, migration, overseas networks, and other historical transformations.
 
 Later campaigns can move to other Basque regions and periods while keeping the etxe, kinship, land, and generational legacy at the centre of play.
+
+
+## Deployment
+
+The repository is configured as a static Netlify site. Pull requests should receive a Netlify Deploy Preview when the GitHub repository is connected to the Netlify project and Deploy Previews are enabled.
