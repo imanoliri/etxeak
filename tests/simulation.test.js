@@ -181,7 +181,7 @@ test("a productive asset needs a worker living within the etxe work radius", () 
   advanceSeason(state);
 
   assert.equal(field.state.sown, false);
-  assert.equal(ETXE_WORK_RADIUS_KM, 1);
+  assert.equal(ETXE_WORK_RADIUS_KM, 1.5);
 });
 
 test("new etxe placement is limited to the work radius of an existing etxe", () => {
