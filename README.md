@@ -131,7 +131,7 @@ The current MVP-0 branch already supports:
 - starting multi-season projects for a new etxe or a new field;
 - completing construction through Builder labour;
 - moving family members between completed etxeak;
-- opening Commerce mode, automatically zooming out to the other family locations, and trading with them using resource values (food 1, wood 2, stone 3), a 5× trade-value premium, and distance food cost;
+- opening Commerce mode, automatically zooming out to the other family locations, and trading with them using equal-value barter (food 1, wood 2, stone 3, livestock 3), upward rounding of whole payment units, and a separate distance food cost;
 - opening a newly built etxe by choosing an eligible working-age unmarried man, selecting a wife family on the same regional zoom-out, paying the marriage value, and moving the founding couple into the new etxe.
 
 The starting names, demographic rates, production yields, costs, and initial balances are **prototype gameplay values**, not final historical claims. They require historical calibration before the campaign is considered historically representative.
@@ -151,7 +151,7 @@ Included in MVP-0:
 7. **Multiple player-controlled residences/etxeak** belonging to the same family.
 8. **Moving family members between etxeak** and assigning them to work there.
 9. **Real map locations** determining where buildings and productive assets exist.
-10. **Basic commerce** with static external family locations: receiving a resource costs 5× its value, paid with whole units of a chosen valued resource, plus 1 food per started 50 km of distance. Food = 1, wood = 2, stone = 3; any unavoidable mismatch rounds upward.
+10. **Basic commerce** with static external family locations: resources exchange at equal intrinsic value (food = 1, wood = 2, stone = 3, livestock = 3). The total received value is divided by the chosen payment resource's value and rounded upward to whole units, so any mismatch is a loss to the player. Transport is separate and consumes 1 food per started 50 km.
 11. **Etxe founding marriage**: a completed etxe stays unopened until an eligible working-age unmarried man who is not already an etxe head is chosen and a wife is obtained from another static family. The marriage costs value 10 minus 1 for every distinct year the player has traded with that family, with a minimum value of 3; payment uses the same resource values and rounds upward.
 
 Explicitly excluded from MVP-0:
