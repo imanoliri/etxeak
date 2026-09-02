@@ -99,6 +99,9 @@ const familyHandlers = {
     if (movePerson(state, personId, residenceId)) {
       refresh();
       openFamilyPanel(state, familyHandlers);
+    } else {
+      showToast("That etxe is full.");
+      openFamilyPanel(state, familyHandlers);
     }
   }
 };
