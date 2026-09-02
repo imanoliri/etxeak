@@ -168,10 +168,14 @@ function resolveSeason() {
 function resolveSeasonAutomatically() {
   if (!state || autoplayPaused) return;
 
+  // Automatic season passage must surface exactly the same information as
+  // pressing "Next season". Pause the timer while the summary is open, then
+  // resume with a fresh countdown when the player continues.
+  pauseAutoplay();
+  resumeAfterSummary = true;
+
   const summary = resolveSeason();
-  const firstMessage = summary.messages[0] ?? "Nothing notable happened.";
-  showToast(`${summary.season} ${summary.year}: ${firstMessage}`);
-  resetAutoplayCountdown();
+  showSummary(summary);
 }
 
 function toggleAutoplay() {
