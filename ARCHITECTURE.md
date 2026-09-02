@@ -309,6 +309,8 @@ Population changes through:
 
 Demographic rates should be historically calibrated later, but the architecture must support age-specific and context-sensitive probabilities rather than a single annual population-growth value.
 
+MVP-0 currently implements deterministic placeholder age-specific death rates and a simple annual birth chance for the two living household heads. These values exist only to exercise organic population change and are not yet historically calibrated.
+
 ## Historical change
 
 The simulation core should expose mechanisms; campaign content determines when new opportunities or pressures appear.
@@ -327,19 +329,20 @@ Examples:
 
 Historical change modifies available actions and incentives rather than awarding abstract technology points.
 
-## Recommended code boundaries
+## Current code boundaries
 
-A later implementation should keep modules roughly separated as:
+The MVP-0 implementation is deliberately lightweight and framework-free:
 
-- `domain/` — entity types and invariants
-- `simulation/` — seasonal resolution and rule systems
-- `systems/` — demography, labour, production, marriage, inheritance, migration, construction
-- `content/` — campaign data and historical configuration
-- `state/` — serialization, save/load, migrations
-- `ui/` — map, household, genealogy, planning, summaries
-- `tests/` — deterministic simulation tests and scenario tests
+- `src/scenarios.js` — data-driven starting families, people, initial resources, and assets;
+- `src/simulation.js` — deterministic seasonal economy, demography, construction, occupations, and movement;
+- `src/map.js` — Leaflet-only rendering and map interaction;
+- `src/ui.js` — DOM rendering for setup, family, build, resources, and summaries;
+- `src/main.js` — application orchestration;
+- `tests/` — deterministic simulation tests.
 
-Exact framework choices can be decided when implementation begins; the simulation layer should remain framework-independent.
+The simulation module does not import Leaflet or browser DOM APIs. Campaign/scenario data remains separate from simulation logic.
+
+As the project grows, these modules can split further into `domain/`, `systems/`, `content/`, `state/`, and `ui/` without changing the core rule that rendering is independent from simulation.
 
 ## Save games and reproducibility
 
@@ -388,7 +391,7 @@ For MVP-0, avoid introducing a generalized diplomacy/other-household framework u
 
 ### Simplified seasonal resolution
 
-Each turn resolves:
+The current engine implements this resolution in `src/simulation.js`. Each turn resolves:
 
 1. season opens;
 2. persistent occupations generate suggested work assignments;
