@@ -1222,3 +1222,74 @@ select {
   stroke: currentColor;
   stroke-width: 1.65;
 }
+
+
+/* --- Commerce --- */
+
+.commerce-action {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  min-width: 42px;
+  padding: 8px !important;
+}
+
+.commerce-action svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.commerce-action.is-active,
+.commerce-action[aria-pressed="true"] {
+  background: #17261f !important;
+  color: #f8f6ef !important;
+}
+
+.game-marker.commerce {
+  background: #7a5f35;
+  color: #fff9eb;
+  border-color: #fff9eb;
+}
+
+.trade-summary {
+  display: grid;
+  gap: 5px;
+  border: 1px solid rgba(23, 38, 31, 0.1);
+  border-radius: 11px;
+  padding: 11px;
+  background: rgba(255, 255, 255, 0.56);
+}
+
+.trade-summary span,
+.trade-quote {
+  font-size: 0.74rem;
+  line-height: 1.4;
+  opacity: 0.72;
+}
+
+.trade-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+
+.trade-quote {
+  min-height: 2.2em;
+  margin: 0 0 10px;
+}
+
+@media (max-width: 700px) {
+  .commerce-action {
+    flex: 0 0 40px !important;
+  }
+
+  .trade-controls {
+    grid-template-columns: 1fr;
+  }
+}
