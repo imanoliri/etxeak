@@ -11,7 +11,6 @@ import { OCCUPATIONS } from "./scenarios.js";
 import {
   TRADEABLE_RESOURCES,
   TRADE_BATCH_MAX,
-  TRADE_RATIO,
   getResourceLabel,
   getResourceValue,
   getScenarioProducedResources,
@@ -368,7 +367,7 @@ export function openCommercePanel(state, partnerScenario, handlers, selection = 
     </section>
     <section class="panel-section">
       <h3>Trade</h3>
-      <p class="muted">Resource values: food 1 · wood 2 · stone 3 · livestock 3. Commerce costs ${TRADE_RATIO}× the value received, plus ${transportFoodCost} food for transport (1 per started 50 km). If the chosen payment resource cannot match the value exactly, you pay the next whole unit.</p>
+      <p class="muted">Resource values: food 1 · wood 2 · stone 3 · livestock 3. Barter is equal-value: the received amount sets the target value, then payment is rounded up to a whole unit of the resource you give, so any rounding loss is yours. Transport is separate and always consumes ${transportFoodCost} food here (1 per started 50 km).</p>
       <div class="trade-controls">
         <label>Give<select id="trade-give">${giveOptions}</select></label>
         <label>Receive<select id="trade-receive">${receiveOptions}</select></label>
@@ -419,17 +418,19 @@ export function openCommercePanel(state, partnerScenario, handlers, selection = 
       return;
     }
 
-    const overpay =
-      current.overpayValue > 0
-        ? ` · paid value ${current.giveValuePaid} because ${current.targetValue} cannot be matched exactly`
-        : "";
     const totalFood =
       current.transportFoodCost +
       (giveSelect.value === "food" ? current.giveAmount : 0);
+    const receiveLabel = getResourceLabel(receiveSelect.value).toLowerCase();
+    const giveLabel = getResourceLabel(giveSelect.value).toLowerCase();
 
-    quote.textContent =
-      `Give ${current.giveAmount} ${getResourceLabel(giveSelect.value).toLowerCase()} (target value ${current.targetValue}${overpay}) + ${current.transportFoodCost} food transport → ${current.receiveAmount} ${getResourceLabel(receiveSelect.value).toLowerCase()}.` +
-      (giveSelect.value === "food" ? ` Total food cost: ${totalFood}.` : "");
+    quote.innerHTML = `
+      <div><strong>Receive:</strong> ${current.receiveAmount} ${receiveLabel} · value ${current.targetValue}</div>
+      <div><strong>Pay:</strong> ${current.giveAmount} ${giveLabel} · value ${current.giveValuePaid}</div>
+      <div><strong>Rounding loss:</strong> ${current.overpayValue} value</div>
+      <div><strong>Transport:</strong> ${current.transportFoodCost} food · ${distanceKm.toFixed(1)} km</div>
+      ${giveSelect.value === "food" ? `<div><strong>Total food deducted:</strong> ${totalFood}</div>` : ""}
+    `;
     confirm.disabled = false;
     confirm.textContent = `Trade ${current.receiveAmount}`;
   };
