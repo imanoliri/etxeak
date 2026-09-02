@@ -218,20 +218,36 @@ test("builders return to their previous occupation when the last project finishe
   assert.equal(worker.occupation, "Farmer");
 });
 
-test("spring sowing failures are stored on fields for map warning rings", () => {
+test("only seed shortages mark fields for the red sowing warning ring", () => {
   const state = createGame(STARTING_SCENARIOS[0]);
   state.stores.food = 0;
 
-  const summary = advanceSeason(state);
+  advanceSeason(state);
   const failedFields = state.assets.filter(
     (asset) => asset.type === "field" && asset.state.sowingFailed
   );
 
   assert.ok(failedFields.length >= 1);
   assert.ok(
-    failedFields.every((asset) => ["no-seed", "no-farmer"].includes(asset.state.sowingFailureReason))
+    failedFields.every((asset) => asset.state.sowingFailureReason === "no-seed")
   );
-  assert.ok(summary.messages.some((message) => message.includes("could not be sown")));
+});
+
+test("missing farmers do not mark fields for the red sowing warning ring", () => {
+  const state = createGame(STARTING_SCENARIOS[0]);
+  state.people
+    .filter((person) => person.alive && person.age >= 12 && person.occupation === "Farmer")
+    .forEach((person) => {
+      person.occupation = "Forestry";
+    });
+
+  const summary = advanceSeason(state);
+  const fields = state.assets.filter((asset) => asset.type === "field");
+
+  assert.ok(fields.every((asset) => asset.state.sowingFailed === false));
+  assert.ok(
+    summary.messages.some((message) => message.includes("no farmer was available"))
+  );
 });
 
 test("food shortages accumulate yearly hunger pressure", () => {
