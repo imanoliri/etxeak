@@ -177,10 +177,10 @@ export function renderGameState(mapContext, state, handlers = {}) {
     }).addTo(mapContext.gameLayer);
 
     const marker = window.L.marker(residence.coords, {
-      icon: divIcon("home", "", `${residents}/${capacity}`)
+      icon: divIcon("home", residence.opened ? "" : "unopened", residence.opened ? `${residents}/${capacity}` : "new")
     });
     marker.bindPopup(
-      `<strong>${residence.name}</strong><br><span>${residents}/${capacity} residents</span><br><span>${ETXE_WORK_RADIUS_KM} km work radius</span>`
+      `<strong>${residence.name}</strong><br><span>${residence.opened ? `${residents}/${capacity} residents` : "Built · not yet opened"}</span><br><span>${ETXE_WORK_RADIUS_KM} km work radius</span>`
     );
     marker.on("click", () => handlers.onResidence?.(residence.id));
     marker.addTo(mapContext.gameLayer);
