@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import { STARTING_SCENARIOS } from "../src/scenarios.js";
 import {
   advanceSeason,
+  chooseAutomaticOccupation,
   createGame,
   getCurrentSeason,
   movePerson,
@@ -63,4 +64,26 @@ test("field placement must be near an existing etxe", () => {
   const state = createGame(STARTING_SCENARIOS[0]);
   const result = startProject(state, "field", [42.9, -2.35]);
   assert.equal(result.ok, false);
+});
+
+
+test("starting family records genealogy links", () => {
+  const state = createGame(STARTING_SCENARIOS[0]);
+  const heads = state.people.filter((person) => person.role === "head");
+  const children = state.people.filter((person) => person.role === "child");
+
+  assert.equal(heads.length, 2);
+  assert.equal(heads[0].spouseId, heads[1].id);
+  assert.equal(heads[1].spouseId, heads[0].id);
+  assert.ok(children.every((child) => child.parentIds?.length === 2));
+});
+
+test("working-age unassigned people receive a sensible automatic occupation", () => {
+  const state = createGame(STARTING_SCENARIOS[0]);
+  const child = state.people.find((person) => person.age < 12 && person.occupation === "Unassigned");
+  child.age = 12;
+
+  const occupation = chooseAutomaticOccupation(state, child);
+  assert.notEqual(occupation, "Unassigned");
+  assert.ok(["Farmer", "Herder", "Forestry", "Miner", "Builder"].includes(occupation));
 });
