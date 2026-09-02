@@ -30,7 +30,7 @@ const clone = (value) => JSON.parse(JSON.stringify(value));
 
 export function createGame(scenario) {
   const state = {
-    version: 2,
+    version: 3,
     scenarioId: scenario.id,
     familyName: scenario.familyName,
     placeName: scenario.placeName,
@@ -38,6 +38,7 @@ export function createGame(scenario) {
     rngState: scenario.seed >>> 0,
     stores: clone(scenario.stores),
     commerce: { tradeYearsByPartner: {} },
+    foodSecurity: { shortageSeasonsThisYear: 0, shortageFoodThisYear: 0 },
     people: clone(scenario.people),
     residences: [
       {
@@ -70,13 +71,20 @@ export function createGame(scenario) {
 
   state.assets.forEach((asset) => {
     if (asset.type === "field") {
-      asset.state = { sown: false, tended: false };
+      asset.state = { sown: false, tended: false, sowingFailed: false, sowingFailureReason: null };
     }
   });
 
   state.people.forEach((person) => {
     if (canWork(person) && person.occupation === "Unassigned") {
       person.occupation = chooseAutomaticOccupation(state, person);
+    }
+    if (
+      canWork(person) &&
+      person.occupation !== "Builder" &&
+      person.occupation !== "Unassigned"
+    ) {
+      person.lastNonBuilderOccupation = person.occupation;
     }
   });
 
@@ -113,9 +121,10 @@ export function canWork(person) {
   return person.alive && person.age >= WORK_AGE;
 }
 
-export function chooseAutomaticOccupation(state, person) {
+export function chooseAutomaticOccupation(state, person, options = {}) {
   if (!person || !canWork(person)) return "Unassigned";
 
+  const allowBuilder = options.allowBuilder !== false;
   const residenceId = person.residenceId;
   const residence = state.residences.find((entry) => entry.id === residenceId);
   const nearbyAssets = residence
@@ -130,7 +139,7 @@ export function chooseAutomaticOccupation(state, person) {
     ["Herder", nearbyAssets.filter((asset) => asset.type === "pasture").length],
     ["Forestry", nearbyAssets.filter((asset) => asset.type === "forest").length],
     ["Miner", nearbyAssets.filter((asset) => asset.type === "mine").length],
-    ["Builder", nearbyProjects.length > 0 ? 1 : 0]
+    ["Builder", allowBuilder && nearbyProjects.length > 0 ? 1 : 0]
   ]);
 
   const occupied = new Map();
@@ -139,8 +148,10 @@ export function chooseAutomaticOccupation(state, person) {
     occupied.set(other.occupation, (occupied.get(other.occupation) ?? 0) + 1);
   }
 
-  const priority = ["Farmer", "Herder", "Forestry", "Miner", "Builder"];
-  let best = "Builder";
+  const priority = allowBuilder
+    ? ["Farmer", "Herder", "Forestry", "Miner", "Builder"]
+    : ["Farmer", "Herder", "Forestry", "Miner"];
+  let best = "Unassigned";
   let bestGap = 0;
 
   for (const occupation of priority) {
@@ -151,13 +162,39 @@ export function chooseAutomaticOccupation(state, person) {
     }
   }
 
-  return best;
+  if (best !== "Unassigned") return best;
+
+  if (
+    person.lastNonBuilderOccupation &&
+    person.lastNonBuilderOccupation !== "Builder" &&
+    person.lastNonBuilderOccupation !== "Unassigned"
+  ) {
+    return person.lastNonBuilderOccupation;
+  }
+
+  const nearbyFallback = ["Farmer", "Herder", "Forestry", "Miner"].find(
+    (occupation) => (demand.get(occupation) ?? 0) > 0
+  );
+  if (nearbyFallback) return nearbyFallback;
+  if (allowBuilder && nearbyProjects.length > 0) return "Builder";
+  return "Farmer";
 }
 
 export function setOccupation(state, personId, occupation) {
   if (!OCCUPATIONS.includes(occupation)) return false;
   const person = state.people.find((entry) => entry.id === personId && entry.alive);
   if (!person || !canWork(person)) return false;
+
+  if (
+    occupation === "Builder" &&
+    person.occupation !== "Builder" &&
+    person.occupation !== "Unassigned"
+  ) {
+    person.lastNonBuilderOccupation = person.occupation;
+  } else if (occupation !== "Builder" && occupation !== "Unassigned") {
+    person.lastNonBuilderOccupation = occupation;
+  }
+
   person.occupation = occupation;
   return true;
 }
@@ -335,9 +372,18 @@ function resolveField(state, asset, season, pools, messages, activities) {
   if (season === "Spring") {
     asset.state.sown = false;
     asset.state.tended = false;
+    asset.state.sowingFailed = false;
+    asset.state.sowingFailureReason = null;
 
-    if (!worked) return;
+    if (!worked) {
+      asset.state.sowingFailed = true;
+      asset.state.sowingFailureReason = "no-farmer";
+      messages.push(`${asset.name}: could not be sown because no farmer was available.`);
+      return;
+    }
     if (state.stores.food < 1) {
+      asset.state.sowingFailed = true;
+      asset.state.sowingFailureReason = "no-seed";
       messages.push(`${asset.name}: could not be sown because no seed reserve was available.`);
       return;
     }
@@ -414,8 +460,13 @@ function recordActivity(activities, target, worker) {
 }
 
 function resolveProjects(state, messages, activities) {
+  if (state.projects.length === 0) {
+    restoreIdleBuilders(state, messages);
+    return;
+  }
+
   const builderPools = createWorkerPools(state);
-  if ((builderPools.get("Builder")?.length ?? 0) <= 0 || state.projects.length === 0) return;
+  if ((builderPools.get("Builder")?.length ?? 0) <= 0) return;
 
   for (const project of [...state.projects]) {
     const remaining = project.workRequired - project.progress;
@@ -446,6 +497,37 @@ function resolveProjects(state, messages, activities) {
       completeProject(state, project, messages);
     }
   }
+
+  if (state.projects.length === 0) {
+    restoreIdleBuilders(state, messages);
+  }
+}
+
+function restoreIdleBuilders(state, messages) {
+  if (state.projects.length > 0) return;
+
+  for (const person of getLivingPeople(state)) {
+    if (!canWork(person) || person.occupation !== "Builder") continue;
+
+    const remembered =
+      person.lastNonBuilderOccupation &&
+      person.lastNonBuilderOccupation !== "Builder" &&
+      person.lastNonBuilderOccupation !== "Unassigned"
+        ? person.lastNonBuilderOccupation
+        : null;
+    const nextOccupation =
+      remembered ?? chooseAutomaticOccupation(state, person, { allowBuilder: false });
+
+    if (!nextOccupation || nextOccupation === "Builder") continue;
+
+    person.occupation = nextOccupation;
+    if (nextOccupation !== "Unassigned") {
+      person.lastNonBuilderOccupation = nextOccupation;
+    }
+    messages.push(
+      `${person.givenName} finished construction and returned to work as a ${nextOccupation}.`
+    );
+  }
 }
 
 function completeProject(state, project, messages) {
@@ -471,7 +553,7 @@ function completeProject(state, project, messages) {
       name: `Field ${state.counters.asset - 1}`,
       coords: [...project.coords],
       residenceId: project.residenceId,
-      state: { sown: false, tended: false }
+      state: { sown: false, tended: false, sowingFailed: false, sowingFailureReason: null }
     };
     state.assets.push(asset);
     messages.push(`${asset.name} was cleared and is ready for the next sowing season.`);
@@ -483,6 +565,7 @@ function completeProject(state, project, messages) {
 function resolveConsumption(state, messages) {
   const population = getPopulation(state);
   const requiredFood = Math.max(1, Math.ceil(population * 0.65));
+  state.foodSecurity ??= { shortageSeasonsThisYear: 0, shortageFoodThisYear: 0 };
 
   if (state.stores.food >= requiredFood) {
     state.stores.food -= requiredFood;
@@ -490,12 +573,24 @@ function resolveConsumption(state, messages) {
   } else {
     const shortage = requiredFood - state.stores.food;
     state.stores.food = 0;
-    messages.push(`Food shortage: ${shortage} food missing this season.`);
+    state.foodSecurity.shortageSeasonsThisYear += 1;
+    state.foodSecurity.shortageFoodThisYear += shortage;
+    const seasons = state.foodSecurity.shortageSeasonsThisYear;
+    messages.push(
+      `Food shortage: ${shortage} food missing this season. Hunger has affected ${seasons} season${seasons === 1 ? "" : "s"} this year; mortality risk is higher and births are less likely at year end.`
+    );
   }
 }
 
 function resolveAnnualDemography(state, messages) {
   const livingBefore = getLivingPeople(state);
+  const shortageSeasons = state.foodSecurity?.shortageSeasonsThisYear ?? 0;
+
+  if (shortageSeasons > 0) {
+    messages.push(
+      `Year-end hunger: ${shortageSeasons} shortage season${shortageSeasons === 1 ? "" : "s"} increased mortality risk and reduced the household birth chance.`
+    );
+  }
 
   livingBefore.forEach((person) => {
     person.age += 1;
@@ -506,7 +601,7 @@ function resolveAnnualDemography(state, messages) {
   });
 
   for (const person of [...getLivingPeople(state)]) {
-    const deathChance = annualDeathChance(person.age);
+    const deathChance = annualDeathChance(person.age, shortageSeasons);
     if (random(state) < deathChance) {
       person.alive = false;
       messages.push(`${person.givenName} died at age ${person.age}.`);
@@ -528,7 +623,7 @@ function resolveAnnualDemography(state, messages) {
     if (!headMother || !headFather) continue;
     if (headMother.residenceId !== residence.id || headFather.residenceId !== residence.id) continue;
     if (!hasResidenceCapacity(state, residence.id)) continue;
-    if (random(state) >= 0.2) continue;
+    if (random(state) >= annualBirthChance(shortageSeasons)) continue;
 
     const givenName = BABY_NAMES[Math.floor(random(state) * BABY_NAMES.length)];
     const baby = {
@@ -546,15 +641,32 @@ function resolveAnnualDemography(state, messages) {
     state.people.push(baby);
     messages.push(`${givenName} was born in ${residence.name}.`);
   }
+
+  if (state.foodSecurity) {
+    state.foodSecurity.shortageSeasonsThisYear = 0;
+    state.foodSecurity.shortageFoodThisYear = 0;
+  }
 }
 
-function annualDeathChance(age) {
-  if (age < 1) return 0.05;
-  if (age < 12) return 0.015;
-  if (age < 45) return 0.006;
-  if (age < 60) return 0.02;
-  if (age < 70) return 0.05;
-  return 0.1;
+export function annualBirthChance(shortageSeasons = 0) {
+  return Math.max(0, 0.2 - 0.05 * Math.max(0, shortageSeasons));
+}
+
+export function annualDeathChance(age, shortageSeasons = 0) {
+  let baseChance;
+  if (age < 1) baseChance = 0.05;
+  else if (age < 12) baseChance = 0.015;
+  else if (age < 45) baseChance = 0.006;
+  else if (age < 60) baseChance = 0.02;
+  else if (age < 70) baseChance = 0.05;
+  else baseChance = 0.1;
+
+  const shortageCount = Math.max(0, shortageSeasons);
+  let hungerPerSeason = 0.006;
+  if (age < 5 || age >= 60) hungerPerSeason = 0.02;
+  else if (age < 12 || age >= 45) hungerPerSeason = 0.012;
+
+  return Math.min(0.95, baseChance + hungerPerSeason * shortageCount);
 }
 
 function random(state) {
