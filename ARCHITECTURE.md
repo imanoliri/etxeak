@@ -414,7 +414,7 @@ MVP-0 tracks food shortages across the current calendar year.
 
 ### Failed sowing state
 
-Fields persist a `sowingFailed` flag and failure reason after an unsuccessful spring sowing attempt. Failure can be caused by either no available Farmer or no seed food. The map reads that simulation state and renders a red warning ring around the field marker; Leaflet is not the source of truth.
+Fields use the `sowingFailed` warning state specifically when a spring sowing attempt fails because there is no seed food. A missing Farmer can still prevent sowing and produce a message, but it does not set the red-ring warning state. The map renders the red ring only for `sowingFailureReason: "no-seed"`; Leaflet is not the source of truth.
 
 ### Etxe capacity and spatial labour
 
