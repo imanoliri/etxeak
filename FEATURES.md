@@ -12,6 +12,33 @@ At game start, the player chooses one of several predefined families. Each optio
 
 Only the chosen family exists during play. The other choices are alternative starting scenarios, not AI neighbours.
 
+## Implementation status
+
+Implemented on the current MVP-0 branch:
+
+- four data-driven starting-family scenarios;
+- interactive topographic/OSM map with scenario, etxe, asset, and project markers;
+- persistent individual people and working-age restrictions;
+- occupation changes and automatic occupation-to-asset labour allocation;
+- seasonal field cycle: spring sowing, summer tending, autumn harvest;
+- pasture, forestry, and mining production;
+- family food consumption and autumn animal slaughter;
+- deterministic annual aging, simple births, and deaths;
+- resource HUD and seasonal summaries;
+- construction projects for new etxeak and fields;
+- Builder labour progressing projects over multiple seasons;
+- moving people between completed etxeak;
+- deterministic simulation tests run by Netlify before deploy.
+
+Still designed but not yet implemented in MVP-0:
+
+- a graphical genealogy/tree view;
+- explicit per-person seasonal task assignment separate from occupation;
+- local per-etxe stores rather than the current pooled family stores;
+- additional building/asset types such as forges and workshops;
+- deeper starvation/health consequences;
+- save/load persistence.
+
 ## Core loop
 
 **Choose family → plan season → work/produce → consume → build/develop → move people → advance season**
@@ -136,7 +163,8 @@ The first map prototype is implemented as a full-screen interactive topographic 
 - Assets and buildings exist at concrete map coordinates.
 - Distance/location may affect where people can work and where new etxeak/assets can be established.
 - No neighbouring family simulation is required.
-- The current map intentionally contains no family markers until the starting-family scenarios are defined.
+- Starting scenarios are now defined and shown as selectable map locations before play.
+- After selection, only the chosen family's etxe, assets, and projects are rendered.
 
 ## Explicit exclusions
 
