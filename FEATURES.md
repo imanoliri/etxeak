@@ -18,8 +18,10 @@ Implemented on the current MVP-0 branch:
 
 - four data-driven starting-family scenarios;
 - interactive topographic/OSM map with scenario, etxe, asset, and project markers;
-- persistent individual people and working-age restrictions;
-- occupation changes and automatic occupation-to-asset labour allocation;
+- persistent individual people, parent/spouse links, and working-age restrictions;
+- a simple graphical family-tree view;
+- automatic occupation choice when a person becomes working-age, plus player occupation overrides;
+- automatic occupation-to-asset labour allocation;
 - seasonal field cycle: spring sowing, summer tending, autumn harvest;
 - pasture, forestry, and mining production;
 - family food consumption and autumn animal slaughter;
@@ -32,7 +34,6 @@ Implemented on the current MVP-0 branch:
 
 Still designed but not yet implemented in MVP-0:
 
-- a graphical genealogy/tree view;
 - explicit per-person seasonal task assignment separate from occupation;
 - local per-etxe stores rather than the current pooled family stores;
 - additional building/asset types such as forges and workshops;
