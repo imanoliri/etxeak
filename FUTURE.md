@@ -16,7 +16,7 @@ Potential additions:
 - succession and historically grounded inheritance;
 - favours and reciprocal labour;
 - reputation and obligations;
-- local exchange and trade;
+- dynamic household inventories, negotiated exchange, market prices, and autonomous trade;
 - disputes, alliances, and competition for access to resources.
 
 This turns the MVP-0 household economy into the broader generational social simulation envisioned for Etxeak.
@@ -46,6 +46,8 @@ This turns the MVP-0 household economy into the broader generational social simu
 Violence should remain a consequence affecting real people and households rather than becoming a disposable-unit warfare loop.
 
 ## Deeper economy
+
+MVP-0 has only fixed 5:1 static commerce. Future economy systems can replace or extend that abstraction with:
 
 - local and regional markets
 - prices driven by access, scarcity, and demand
