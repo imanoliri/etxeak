@@ -4,15 +4,20 @@ Instructions for coding agents working on Etxeak.
 
 ## Read before changing code
 
-Before implementing a feature, read in full:
+Before **every implementation task or behavioral change**, first inspect the current branch/repository state and read the current documentation before editing code.
+
+Read in full:
 
 1. `README.md`
 2. `ARCHITECTURE.md`
 3. `FEATURES.md`
 4. `FUTURE.md`
-5. relevant source and test files
+5. `AGENTS.md`
+6. relevant source and test files
 
-Do not infer current functionality from `FUTURE.md`.
+Do not rely on memory of an earlier version of these files: re-read them from the branch being changed. Do not infer current functionality from `FUTURE.md`.
+
+If the requested change conflicts with the documented architecture or scope, resolve that explicitly before implementation rather than silently drifting the design.
 
 ## Document roles
 
@@ -22,7 +27,15 @@ Do not infer current functionality from `FUTURE.md`.
 - **FUTURE.md** — ideas intentionally deferred beyond current scope.
 - **AGENTS.md** — repository working rules.
 
-When implementation begins, keep FEATURES.md accurate: clearly distinguish designed-but-not-yet-implemented functionality from implemented functionality.
+Keep the documentation synchronized with implementation throughout the task, not as a cleanup step at the end:
+
+- update `FEATURES.md` whenever implemented/current-scope behavior changes;
+- update `ARCHITECTURE.md` whenever rules, state, boundaries, or system responsibilities change;
+- update `README.md` when player-visible behavior or the current playable slice materially changes;
+- move genuinely deferred ideas to `FUTURE.md` rather than leaving them mixed into current scope;
+- update `AGENTS.md` when a recurring development rule or repository workflow should apply to future agents.
+
+Documentation and code for the same behavior belong in the same PR.
 
 ## Core design rules
 
@@ -115,7 +128,7 @@ For MVP-0 specifically:
 - no political/religious interaction systems;
 - no autonomous cadet families.
 
-Resource-value rules are shared by commerce and etxe-opening marriage payments: **Food = 1, wood = 2, stone = 3**. Do not assign a value to another resource unless explicitly requested. Payment must round upward when indivisible units cannot exactly meet a required value.
+Resource-value rules are shared by commerce and etxe-opening marriage payments: **food = 1, wood = 2, stone = 3, livestock = 3**. Payment must round upward when indivisible units cannot exactly meet a required value. Commerce transport food is a separate sunk cost and does not contribute to barter value.
 
 Keep the data model extensible enough for these later systems, but do not implement them prematurely.
 
@@ -124,10 +137,13 @@ Prefer a shallow but complete playable household economy over disconnected futur
 ## Workflow
 
 - Verify the current branch and repository state before editing.
+- **Documentation-first:** read the current documentation listed above before touching implementation.
 - Use a dedicated feature branch for implementation work unless explicitly told otherwise.
 - Keep each PR focused.
-- Update documentation in the same PR when architecture or visible behavior changes.
+- **Implement and document together:** whenever behavior changes, update the relevant documentation in the same working pass rather than postponing documentation until the end.
+- Add or update deterministic tests alongside simulation-rule changes.
+- After implementation, re-check the relevant documentation against the resulting behavior and remove contradictions/stale statements.
+- Before requesting review or merge, run available tests/build/lint and verify the Netlify Deploy Preview when configured.
 - Do not merge unless explicitly requested.
-- Before requesting review, run available tests/build/lint and report failures accurately.
 - Keep `src/simulation.js` free of DOM and Leaflet dependencies.
 - Treat values in the current starting scenarios as provisional balance content unless they have been historically researched and documented.
