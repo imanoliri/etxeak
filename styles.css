@@ -1284,6 +1284,73 @@ select {
   margin: 0 0 10px;
 }
 
+.trade-amount-block {
+  display: grid;
+  gap: 6px;
+  margin: 2px 0 10px;
+}
+
+.trade-amount-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.trade-amount-heading strong {
+  min-width: 1.5em;
+  text-align: right;
+}
+
+.trade-amount-grid {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.trade-amount-cell {
+  aspect-ratio: 1;
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid rgba(23, 38, 31, 0.2);
+  border-radius: 7px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.55);
+  color: #17261f;
+  font-size: 0.72rem;
+  font-weight: 800;
+  transition: background 110ms ease, color 110ms ease, transform 110ms ease, box-shadow 110ms ease;
+}
+
+.trade-amount-cell:hover {
+  transform: translateY(-1px);
+}
+
+.trade-amount-cell.is-filled[data-resource="food"] {
+  background: #b88f36;
+  color: #fffaf0;
+}
+
+.trade-amount-cell.is-filled[data-resource="wood"] {
+  background: #785337;
+  color: #fffaf0;
+}
+
+.trade-amount-cell.is-filled[data-resource="stone"] {
+  background: #687178;
+  color: #fffaf0;
+}
+
+.trade-amount-cell.is-filled[data-resource="livestock"] {
+  background: #667d4f;
+  color: #fffaf0;
+}
+
+.trade-amount-cell.is-selected {
+  box-shadow: 0 0 0 2px #17261f;
+}
+
 @media (max-width: 700px) {
   .commerce-action {
     flex: 0 0 40px !important;
