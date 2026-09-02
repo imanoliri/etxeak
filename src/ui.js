@@ -4,6 +4,10 @@ import { OCCUPATIONS } from "./scenarios.js";
 const els = {
   title: document.querySelector("#game-title"),
   dateChip: document.querySelector("#date-chip"),
+  seasonClock: document.querySelector("#season-clock"),
+  timerToggle: document.querySelector("#timer-toggle"),
+  timerSeconds: document.querySelector("#timer-seconds"),
+  timerCountdown: document.querySelector("#timer-countdown"),
   resourceBar: document.querySelector("#resource-bar"),
   actionDock: document.querySelector("#action-dock"),
   familyButton: document.querySelector("#family-button"),
@@ -34,8 +38,13 @@ export function bindStaticActions(handlers) {
   els.buildButton.addEventListener("click", handlers.onBuild);
   els.slaughterButton.addEventListener("click", handlers.onSlaughter);
   els.nextSeasonButton.addEventListener("click", handlers.onNextSeason);
+  els.timerToggle.addEventListener("click", handlers.onToggleAutoplay);
+  els.timerSeconds.addEventListener("change", (event) => handlers.onTimerSeconds(event.target.value));
   els.closePanel.addEventListener("click", closePanel);
-  els.closeSummary.addEventListener("click", () => els.summaryOverlay.classList.add("is-hidden"));
+  els.closeSummary.addEventListener("click", () => {
+    els.summaryOverlay.classList.add("is-hidden");
+    handlers.onCloseSummary?.();
+  });
   els.cancelPlacement.addEventListener("click", handlers.onCancelPlacement);
 }
 
@@ -66,7 +75,15 @@ export function startGameUI(state) {
   els.setupOverlay.classList.add("is-hidden");
   els.actionDock.classList.remove("is-hidden");
   els.resourceBar.classList.remove("is-hidden");
+  els.seasonClock.classList.remove("is-hidden");
   renderHud(state);
+}
+
+export function renderSeasonTimer({ paused, seconds, remainingSeconds }) {
+  els.timerSeconds.value = String(seconds);
+  els.timerToggle.textContent = paused ? "Play" : "Pause";
+  els.timerToggle.setAttribute("aria-pressed", paused ? "true" : "false");
+  els.timerCountdown.textContent = paused ? "paused" : `${Math.max(0, remainingSeconds).toFixed(1)}s`;
 }
 
 export function renderHud(state) {
