@@ -114,7 +114,7 @@ The map covers the chosen Gipuzkoa / adjoining northern Navarre region around th
 - stored resources;
 - occupations and available labour.
 
-The unchosen families are alternative starting scenarios only. They do not appear as neighbours or AI-controlled households during MVP-0.
+The unchosen families are not simulated as AI households, but they also serve as **static commerce contacts**. They appear only in Commerce mode and expose the resources their starting assets can produce.
 
 ### Current playable slice
 
@@ -130,7 +130,8 @@ The current MVP-0 branch already supports:
 - deterministic yearly aging, simple births, and deaths using placeholder prototype rates;
 - starting multi-season projects for a new etxe or a new field;
 - completing construction through Builder labour;
-- moving family members between completed etxeak.
+- moving family members between completed etxeak;
+- opening Commerce mode, automatically zooming out to the other family locations, and trading with them at a fixed 5:1 rate plus distance food cost.
 
 The starting names, demographic rates, production yields, costs, and initial balances are **prototype gameplay values**, not final historical claims. They require historical calibration before the campaign is considered historically representative.
 
@@ -149,19 +150,19 @@ Included in MVP-0:
 7. **Multiple player-controlled residences/etxeak** belonging to the same family.
 8. **Moving family members between etxeak** and assigning them to work there.
 9. **Real map locations** determining where buildings and productive assets exist.
+10. **Basic commerce** with static external family locations: give 5 units of one resource for 1 unit of a resource that family produces, plus 1 food per started 50 km of distance.
 
 Explicitly excluded from MVP-0:
 
 - other simulated families;
 - marriage with external families;
 - diplomacy, reputation, favours, feuds, or social interaction;
-- trade with neighbouring households;
 - political or religious institutions;
 - succession disputes and complex inheritance;
 - autonomous cadet lineages;
 - historical-event systems beyond what is required for the basic seasonal economy.
 
-The purpose of MVP-0 is narrower than the eventual game: prove that **one family living, working, building, expanding, and redistributing its people across a real landscape is already a satisfying simulation**.
+The purpose of MVP-0 is narrower than the eventual game: prove that **one simulated family living, working, building, expanding, redistributing its people, and using simple external commerce across a real landscape is already a satisfying simulation**.
 
 The fuller **Urumea MVP** comes later and adds other households, kinship between families, marriage, migration networks, inheritance, and social/historical interaction.
 
