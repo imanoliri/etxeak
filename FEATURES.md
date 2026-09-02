@@ -191,11 +191,12 @@ At minimum, the simulation should support enough resource flow to make seasonal 
   - mine → stone.
 - Resource values are **food = 1, wood = 2, stone = 3, livestock = 3**.
 - Pasture-producing families can sell livestock as well as food.
-- Receiving 1 unit costs **5× the value of the received resource**.
-- The player chooses one valued resource type to pay with; the required number of whole units is rounded upward, so an imperfect value match costs slightly more.
+- Barter uses **equal intrinsic value**: the total value of what the player receives is the target value to pay.
+- The player chooses one valued resource type to pay with; payment is `ceil(target value / payment-resource value)`, so indivisible units always round against the player.
+- Rounding is performed once for the **whole requested quantity**, not once per received unit.
 - The commerce panel has separate **Give** and **Receive** resource selectors plus an **8-square amount selector**. Pressing square N selects N trade units; squares 1 through N fill with the color associated with the resource being given.
 - Selecting an amount only prepares the exchange. Nothing moves until the player presses **Trade**, and the quote shows the resulting total payment, received amount, and transport cost before confirmation.
-- Every trade also consumes **1 food per started 50 km** between that family and the player's nearest etxe.
+- Every trade also consumes **1 food per started 50 km** between that family and the player's nearest etxe. This transport food is a separate sunk cost and never contributes to barter value.
 - A successful trade records that family as traded-with for the current calendar year; multiple trades in the same year still count as one relationship year for marriage discounts.
 - Distance uses the same geographic coordinates as the map, but trade calculations are simulation/domain logic rather than Leaflet state.
 - Static trade contacts have no finite stock in MVP-0. Dynamic inventories, prices, bargaining, markets, and autonomous trade belong to later systems.
