@@ -193,6 +193,8 @@ At minimum, the simulation should support enough resource flow to make seasonal 
 - Pasture-producing families can sell livestock as well as food.
 - Receiving 1 unit costs **5× the value of the received resource**.
 - The player chooses one valued resource type to pay with; the required number of whole units is rounded upward, so an imperfect value match costs slightly more.
+- The commerce panel has separate **Give** and **Receive** resource selectors plus an **8-square amount selector**. Pressing square N selects N trade units; squares 1 through N fill with the color associated with the resource being given.
+- Selecting an amount only prepares the exchange. Nothing moves until the player presses **Trade**, and the quote shows the resulting total payment, received amount, and transport cost before confirmation.
 - Every trade also consumes **1 food per started 50 km** between that family and the player's nearest etxe.
 - A successful trade records that family as traded-with for the current calendar year; multiple trades in the same year still count as one relationship year for marriage discounts.
 - Distance uses the same geographic coordinates as the map, but trade calculations are simulation/domain logic rather than Leaflet state.
