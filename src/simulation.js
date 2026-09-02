@@ -376,8 +376,6 @@ function resolveField(state, asset, season, pools, messages, activities) {
     asset.state.sowingFailureReason = null;
 
     if (!worked) {
-      asset.state.sowingFailed = true;
-      asset.state.sowingFailureReason = "no-farmer";
       messages.push(`${asset.name}: could not be sown because no farmer was available.`);
       return;
     }
