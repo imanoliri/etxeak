@@ -48,7 +48,7 @@ test("occupation changes are rejected for children below work age", () => {
   assert.equal(setOccupation(state, child.id, "Builder"), false);
 });
 
-test("new etxe project completes with builder work and accepts residents", () => {
+test("new etxe project completes closed and cannot accept residents until opened", () => {
   const state = createGame(STARTING_SCENARIOS[1]);
   const result = startProject(state, "etxe", [43.301, -1.855]);
   assert.equal(result.ok, true);
@@ -59,9 +59,14 @@ test("new etxe project completes with builder work and accepts residents", () =>
 
   assert.equal(state.residences.length, 2);
   const destination = state.residences[1];
-  const adult = state.people.find((person) => person.age >= 12 && person.alive);
-  assert.equal(movePerson(state, adult.id, destination.id), true);
-  assert.equal(adult.residenceId, destination.id);
+  const adult = state.people.find(
+    (person) =>
+      person.age >= 12 &&
+      person.alive &&
+      !person.headOfResidenceId
+  );
+  assert.equal(destination.opened, false);
+  assert.equal(movePerson(state, adult.id, destination.id), false);
 });
 
 test("field placement must be near an existing etxe", () => {
