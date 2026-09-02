@@ -6,7 +6,11 @@ import {
   advanceSeason,
   chooseAutomaticOccupation,
   createGame,
+  ETXE_CAPACITY,
+  ETXE_WORK_RADIUS_KM,
   getCurrentSeason,
+  getResidencePopulation,
+  hasResidenceCapacity,
   movePerson,
   setOccupation,
   startProject
@@ -109,4 +113,79 @@ test("season summary records worked map locations", () => {
   assert.ok(summary.activities.every((activity) => Array.isArray(activity.coords)));
   assert.ok(summary.activities.every((activity) => activity.workers >= 1));
   assert.ok(summary.activities.some((activity) => activity.targetType === "asset"));
+});
+
+
+test("etxe capacity blocks additional residents", () => {
+  const state = createGame(STARTING_SCENARIOS[0]);
+  assert.equal(state.residences[0].capacity, ETXE_CAPACITY);
+
+  while (getResidencePopulation(state, "etxe-1") < ETXE_CAPACITY) {
+    const id = `extra-${state.people.length}`;
+    state.people.push({
+      id,
+      givenName: "Extra",
+      surname: "Irizar",
+      sex: "M",
+      age: 20,
+      role: "family",
+      occupation: "Unassigned",
+      alive: true,
+      residenceId: "etxe-1"
+    });
+  }
+
+  state.residences.push({
+    id: "etxe-2",
+    name: "Etxe 2",
+    coords: [43.27, -1.97],
+    foundedYear: 1100,
+    capacity: ETXE_CAPACITY
+  });
+  const mover = state.people.find((person) => person.alive && person.residenceId === "etxe-2");
+  if (!mover) {
+    state.people.push({
+      id: "mover",
+      givenName: "Mover",
+      surname: "Irizar",
+      sex: "F",
+      age: 20,
+      role: "family",
+      occupation: "Unassigned",
+      alive: true,
+      residenceId: "etxe-2"
+    });
+  }
+
+  assert.equal(hasResidenceCapacity(state, "etxe-1"), false);
+  assert.equal(movePerson(state, "mover", "etxe-1"), false);
+});
+
+test("a productive asset needs a worker living within the etxe work radius", () => {
+  const state = createGame(STARTING_SCENARIOS[0]);
+  state.residences.push({
+    id: "etxe-far",
+    name: "Far Etxe",
+    coords: [43.40, -2.20],
+    foundedYear: 1100,
+    capacity: ETXE_CAPACITY
+  });
+
+  state.people
+    .filter((person) => person.alive && person.age >= 12 && person.occupation === "Farmer")
+    .forEach((person) => {
+      person.residenceId = "etxe-far";
+    });
+
+  const field = state.assets.find((asset) => asset.type === "field");
+  advanceSeason(state);
+
+  assert.equal(field.state.sown, false);
+  assert.equal(ETXE_WORK_RADIUS_KM, 5);
+});
+
+test("new etxe placement is limited to the work radius of an existing etxe", () => {
+  const state = createGame(STARTING_SCENARIOS[1]);
+  const result = startProject(state, "etxe", [42.9, -2.35]);
+  assert.equal(result.ok, false);
 });
