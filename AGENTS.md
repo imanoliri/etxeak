@@ -99,7 +99,7 @@ Do not implement features from FUTURE.md unless explicitly requested.
 
 The current implementation target is **MVP-0: One House**.
 
-MVP-0 contains exactly one simulated family chosen from several predefined starting scenarios. Do not create AI neighbouring families merely because the map contains other places. Unchosen scenarios may appear only as static commerce contacts under the documented fixed trade rules.
+MVP-0 contains exactly one simulated family chosen from several predefined starting scenarios. Do not create AI neighbouring families merely because the map contains other places. Unchosen scenarios may appear only as static external contacts under the documented commerce and etxe-opening marriage rules.
 
 Prioritize this coherent loop:
 
@@ -109,11 +109,13 @@ For MVP-0 specifically:
 
 - no diplomacy;
 - no other-family relationships;
-- no external marriage;
-- no simulated/dynamic family-to-family economy; the only allowed MVP-0 exception is the documented fixed static commerce system;
+- no general/dynamic external marriage system; the only MVP-0 exception is the documented etxe-opening flow that sources a static wife from another scenario family;
+- no simulated/dynamic family-to-family economy; the only allowed MVP-0 exception is the documented static value-based commerce system;
 - no feuds;
 - no political/religious interaction systems;
 - no autonomous cadet families.
+
+Resource-value rules are shared by commerce and etxe-opening marriage payments: **Food = 1, wood = 2, stone = 3**. Do not assign a value to another resource unless explicitly requested. Payment must round upward when indivisible units cannot exactly meet a required value.
 
 Keep the data model extensible enough for these later systems, but do not implement them prematurely.
 
