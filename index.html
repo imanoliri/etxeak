@@ -3,38 +3,77 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#15251f" />
+  <meta name="theme-color" content="#17261f" />
   <title>Etxeak — MVP-0</title>
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <main class="game-shell">
-    <header class="map-header">
-      <div>
+    <section class="map-stage" aria-label="Etxeak MVP-0 map">
+      <div id="map"></div>
+    </section>
+
+    <header class="game-header">
+      <div class="title-block">
         <p class="eyebrow">ETXEAK · MVP-0</p>
-        <h1>One House</h1>
+        <h1 id="game-title">One House</h1>
       </div>
-      <div class="season-chip" aria-label="Prototype season">Spring · 1100</div>
+      <button id="date-chip" class="chip" type="button" disabled>Spring · 1100</button>
     </header>
 
-    <section class="map-stage" aria-label="MVP-0 regional map">
-      <div id="map"></div>
-      <div class="scope-card">
-        <strong>MVP-0 region</strong>
-        <span>Gipuzkoa and the adjoining northern Navarre valleys</span>
+    <section id="resource-bar" class="resource-bar is-hidden" aria-label="Family resources"></section>
+
+    <div id="placement-banner" class="placement-banner is-hidden">
+      <span id="placement-text">Choose a location on the map.</span>
+      <button id="cancel-placement" type="button">Cancel</button>
+    </div>
+
+    <nav id="action-dock" class="action-dock is-hidden" aria-label="Game actions">
+      <button id="family-button" type="button">Family</button>
+      <button id="build-button" type="button">Build</button>
+      <button id="slaughter-button" class="is-hidden" type="button">Slaughter 1 animal</button>
+      <button id="next-season-button" class="primary" type="button">Next season</button>
+    </nav>
+
+    <aside id="side-panel" class="side-panel is-hidden" aria-live="polite">
+      <div class="panel-head">
+        <div>
+          <p id="panel-kicker" class="eyebrow">FAMILY</p>
+          <h2 id="panel-title">Household</h2>
+        </div>
+        <button id="close-panel" class="icon-button" type="button" aria-label="Close panel">×</button>
+      </div>
+      <div id="panel-content" class="panel-content"></div>
+    </aside>
+
+    <section id="setup-overlay" class="setup-overlay" aria-labelledby="setup-title">
+      <div class="setup-card">
+        <p class="eyebrow">MVP-0 · ONE HOUSE</p>
+        <h2 id="setup-title">Choose your starting family</h2>
+        <p class="setup-intro">
+          Each option is a separate starting scenario. Only the family you choose exists in this prototype.
+        </p>
+        <div id="scenario-list" class="scenario-list"></div>
+        <p class="prototype-note">
+          Scenario names and starting balances are prototype content and will be historically calibrated later.
+        </p>
       </div>
     </section>
+
+    <section id="summary-overlay" class="summary-overlay is-hidden" aria-live="polite">
+      <div class="summary-card">
+        <p id="summary-kicker" class="eyebrow">SEASON COMPLETE</p>
+        <h2 id="summary-title">Spring 1100</h2>
+        <div id="summary-content" class="summary-content"></div>
+        <button id="close-summary" class="primary wide" type="button">Continue</button>
+      </div>
+    </section>
+
+    <div id="toast" class="toast is-hidden" role="status"></div>
   </main>
 
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin=""
-  ></script>
-  <script src="./app.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="module" src="./src/main.js"></script>
 </body>
 </html>
