@@ -305,7 +305,7 @@ function personRow(state, person) {
         </label>
         <label>
           Residence
-          <select data-residence="${person.id}">
+          <select data-residence="${person.id}" ${person.headOfResidenceId ? "disabled" : ""}>
             ${residenceOptions}
           </select>
         </label>
