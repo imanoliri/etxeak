@@ -95,11 +95,27 @@ High-value scenario tests include:
 
 Do not implement features from FUTURE.md unless explicitly requested.
 
-For the first Urumea MVP, prioritize the smallest coherent loop:
+The current implementation target is **MVP-0: One House**.
 
-**people → kinship → land/assets → seasonal labour → production/consumption → marriage/migration → succession**
+MVP-0 contains exactly one simulated family chosen from several predefined starting scenarios. Do not create AI neighbouring families merely because the map contains other places.
 
-Prefer a shallow but complete playable loop over many disconnected systems.
+Prioritize this coherent loop:
+
+**family → people → occupations → seasonal work → production/consumption → construction → additional family etxeak → movement of family members**
+
+For MVP-0 specifically:
+
+- no diplomacy;
+- no other-family relationships;
+- no external marriage;
+- no family-to-family trade;
+- no feuds;
+- no political/religious interaction systems;
+- no autonomous cadet families.
+
+Keep the data model extensible enough for these later systems, but do not implement them prematurely.
+
+Prefer a shallow but complete playable household economy over disconnected future systems.
 
 ## Workflow
 
