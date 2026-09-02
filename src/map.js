@@ -10,6 +10,16 @@ const markerKinds = {
   mine: "mine"
 };
 
+const markerEmoji = {
+  home: "🏠",
+  field: "🌾",
+  forest: "🌲",
+  pasture: "🐑",
+  mine: "⛏️",
+  project: "🛠️",
+  scenario: "👪"
+};
+
 function markerSvg(kind) {
   const icons = {
     home: '<path d="M4 11.5 12 5l8 6.5v8H14v-5h-4v5H4z"/>',
@@ -27,7 +37,7 @@ function markerSvg(kind) {
 function divIcon(kind, className = "") {
   return window.L.divIcon({
     className: "",
-    html: `<div class="game-marker ${className}" data-kind="${kind}">${markerSvg(kind)}</div>`,
+    html: `<div class="marker-stack"><span class="marker-emoji" aria-hidden="true">${markerEmoji[kind] ?? "📍"}</span><div class="game-marker ${className}" data-kind="${kind}">${markerSvg(kind)}</div></div>`,
     iconSize: [30, 30],
     iconAnchor: [15, 15]
   });
@@ -116,6 +126,7 @@ export function clearScenarioPreviews(mapContext) {
 
 export function renderGameState(mapContext, state, handlers = {}) {
   mapContext.gameLayer.clearLayers();
+  const seasonSummary = handlers.seasonSummary ?? null;
 
   state.residences.forEach((residence) => {
     const residents = state.people.filter(
@@ -150,6 +161,42 @@ export function renderGameState(mapContext, state, handlers = {}) {
     );
     marker.addTo(mapContext.gameLayer);
   });
+
+  const workedLocations = new Map();
+  for (const activity of seasonSummary?.activities ?? []) {
+    const key = activity.coords.join(",");
+    const existing = workedLocations.get(key);
+    if (existing) {
+      existing.workers += activity.workers;
+      existing.labels.push(activity.label);
+    } else {
+      workedLocations.set(key, {
+        coords: activity.coords,
+        workers: activity.workers,
+        labels: [activity.label]
+      });
+    }
+  }
+
+  for (const activity of workedLocations.values()) {
+    const count = activity.workers > 1 ? `×${activity.workers}` : "";
+    const icon = window.L.divIcon({
+      className: "",
+      html: `<div class="worker-marker" aria-label="${activity.workers} worker${activity.workers === 1 ? "" : "s"}">👤<span>${count}</span></div>`,
+      iconSize: [34, 26],
+      iconAnchor: [2, 28]
+    });
+    const marker = window.L.marker(activity.coords, {
+      icon,
+      interactive: false,
+      keyboard: false
+    });
+    marker.bindTooltip(
+      `${activity.workers} worker${activity.workers === 1 ? "" : "s"} · ${activity.labels.join(", ")}`,
+      { direction: "right", offset: [12, -8] }
+    );
+    marker.addTo(mapContext.gameLayer);
+  }
 }
 
 export function focusOn(mapContext, coords, zoom = 13) {
