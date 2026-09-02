@@ -127,11 +127,16 @@ Projects progress over seasons or years. They never complete instantly when purc
 
 ## Map
 
-- Use a real geographic map for the chosen Urumea-region scope.
-- Starting families occupy different real locations.
-- Assets and buildings exist at concrete map locations.
+The first map prototype is implemented as a full-screen interactive topographic map.
+
+- The MVP-0 playable viewport is approximately **42.88–43.48° N, 2.42–1.65° W**, matching the selected Gipuzkoa / adjoining northern Navarre region.
+- The default presentation uses a topographic basemap, with OpenStreetMap available as an alternate layer.
+- The map supports pan and zoom while keeping the player near the playable region.
+- Starting families will occupy different real locations inside this region.
+- Assets and buildings exist at concrete map coordinates.
 - Distance/location may affect where people can work and where new etxeak/assets can be established.
 - No neighbouring family simulation is required.
+- The current map intentionally contains no family markers until the starting-family scenarios are defined.
 
 ## Explicit exclusions
 
