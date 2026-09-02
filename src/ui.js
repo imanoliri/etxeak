@@ -134,9 +134,13 @@ function renderSeasonFeedback(summary) {
     return;
   }
 
-  const messages = summary.messages.length
-    ? summary.messages
-    : ["Nothing notable happened this season."];
+  const messages = summary.messages.filter((message) => !isRoutineEconomicMessage(message));
+
+  if (messages.length === 0) {
+    els.seasonFeedback.classList.add("is-hidden");
+    els.seasonFeedback.innerHTML = "";
+    return;
+  }
 
   els.seasonFeedback.innerHTML = `
     <strong>${summary.season} ${summary.year}</strong>
@@ -145,6 +149,22 @@ function renderSeasonFeedback(summary) {
     </div>
   `;
   els.seasonFeedback.classList.remove("is-hidden");
+}
+
+function isRoutineEconomicMessage(message) {
+  return (
+    message.startsWith("Household consumption:") ||
+    message.includes(": sown (") ||
+    message.includes(": could not be sown") ||
+    message.includes(": crop tended.") ||
+    message.includes(": harvested +") ||
+    message.includes(": harvest was lost") ||
+    /: \+\d+ wood\.$/.test(message) ||
+    /: \+\d+ stone\.$/.test(message) ||
+    message.includes(": livestock increased by ") ||
+    message.includes("food from animal products") ||
+    message.includes("construction work.")
+  );
 }
 
 export function openFamilyPanel(state, handlers) {
