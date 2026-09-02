@@ -190,7 +190,7 @@ When a season resolves, its results are shown directly in the main game UI rathe
 - resource changes appear as signed deltas such as **+9** or **-4** beside the current total;
 - map locations use compact **color-coded pictograms** rather than emoji overlays; fields use a wheat pictogram and pastures use a sheep pictogram;
 - every location worked during the completed season receives a visible **👤** worker marker (with a count when multiple workers were applied);
-- all season-resolution messages remain available in a compact, non-blocking results strip on the map.
+- the non-blocking season notification strip only shows **notable events and warnings**; routine production, consumption, sowing/tending/harvest, and construction-work progress are intentionally omitted because those outcomes are already represented by resource deltas and map activity markers.
 
 The same feedback is used for manual and automatic season advancement.
 
