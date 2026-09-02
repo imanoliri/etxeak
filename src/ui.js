@@ -8,6 +8,14 @@ import {
   getResidencePopulation
 } from "./simulation.js";
 import { OCCUPATIONS } from "./scenarios.js";
+import {
+  TRADEABLE_RESOURCES,
+  TRADE_RATIO,
+  getResourceLabel,
+  getScenarioProducedResources,
+  getTradeDistanceKm,
+  getTransportFoodCost
+} from "./commerce.js";
 
 const els = {
   title: document.querySelector("#game-title"),
@@ -21,6 +29,7 @@ const els = {
   actionDock: document.querySelector("#action-dock"),
   familyButton: document.querySelector("#family-button"),
   buildButton: document.querySelector("#build-button"),
+  commerceButton: document.querySelector("#commerce-button"),
   slaughterButton: document.querySelector("#slaughter-button"),
   nextSeasonButton: document.querySelector("#next-season-button"),
   sidePanel: document.querySelector("#side-panel"),
@@ -45,6 +54,7 @@ let toastTimer = null;
 export function bindStaticActions(handlers) {
   els.familyButton.addEventListener("click", handlers.onFamily);
   els.buildButton.addEventListener("click", handlers.onBuild);
+  els.commerceButton.addEventListener("click", handlers.onCommerce);
   els.slaughterButton.addEventListener("click", handlers.onSlaughter);
   els.nextSeasonButton.addEventListener("click", handlers.onNextSeason);
   els.timerToggle.addEventListener("click", handlers.onToggleAutoplay);
@@ -86,6 +96,11 @@ export function startGameUI(state) {
   els.resourceBar.classList.remove("is-hidden");
   els.seasonClock.classList.remove("is-hidden");
   renderHud(state);
+}
+
+export function setCommerceActive(active) {
+  els.commerceButton.setAttribute("aria-pressed", active ? "true" : "false");
+  els.commerceButton.classList.toggle("is-active", active);
 }
 
 export function renderSeasonTimer({ paused, seconds, remainingSeconds }) {
@@ -286,6 +301,72 @@ function personRow(state, person) {
       </div>
     </div>
   `;
+}
+
+
+export function openCommercePanel(state, partnerScenario, handlers) {
+  const produced = getScenarioProducedResources(partnerScenario);
+  const distanceKm = getTradeDistanceKm(state, partnerScenario);
+  const transportFoodCost = getTransportFoodCost(distanceKm);
+
+  els.panelKicker.textContent = "COMMERCE";
+  els.panelTitle.textContent = partnerScenario.familyName;
+
+  if (produced.length === 0) {
+    els.panelContent.innerHTML = '<section class="panel-section"><p class="muted">This family has no tradable production.</p></section>';
+    els.sidePanel.classList.remove("is-hidden");
+    return;
+  }
+
+  const defaultReceive = produced[0];
+  const defaultGive = TRADEABLE_RESOURCES.find((resource) => resource !== defaultReceive) ?? TRADEABLE_RESOURCES[0];
+  const giveOptions = TRADEABLE_RESOURCES.map((resource) =>
+    `<option value="${resource}" ${resource === defaultGive ? "selected" : ""}>${getResourceLabel(resource)} (${state.stores[resource] ?? 0})</option>`
+  ).join("");
+  const receiveOptions = produced.map((resource) =>
+    `<option value="${resource}">${getResourceLabel(resource)}</option>`
+  ).join("");
+
+  els.panelContent.innerHTML = `
+    <section class="panel-section">
+      <div class="trade-summary">
+        <strong>${partnerScenario.placeName}</strong>
+        <span>${distanceKm.toFixed(1)} km from your nearest etxe</span>
+        <span>Produces: ${produced.map((resource) => getResourceLabel(resource)).join(", ")}</span>
+      </div>
+    </section>
+    <section class="panel-section">
+      <h3>Trade</h3>
+      <p class="muted">Exchange ${TRADE_RATIO}:1. Each trade also costs ${transportFoodCost} food for transport (${getResourceLabel("food").toLowerCase()} per started 50 km).</p>
+      <div class="trade-controls">
+        <label>Give<select id="trade-give">${giveOptions}</select></label>
+        <label>Receive<select id="trade-receive">${receiveOptions}</select></label>
+      </div>
+      <div id="trade-quote" class="trade-quote"></div>
+      <button id="trade-confirm" class="primary wide" type="button">Trade</button>
+    </section>
+  `;
+
+  const giveSelect = els.panelContent.querySelector("#trade-give");
+  const receiveSelect = els.panelContent.querySelector("#trade-receive");
+  const quote = els.panelContent.querySelector("#trade-quote");
+  const confirm = els.panelContent.querySelector("#trade-confirm");
+
+  const updateQuote = () => {
+    const give = giveSelect.value;
+    const receive = receiveSelect.value;
+    const totalFood = transportFoodCost + (give === "food" ? TRADE_RATIO : 0);
+    quote.textContent = give === receive
+      ? "Choose two different resources."
+      : `Give ${TRADE_RATIO} ${getResourceLabel(give).toLowerCase()} + ${transportFoodCost} food transport → 1 ${getResourceLabel(receive).toLowerCase()}. ${give === "food" ? `Total food cost: ${totalFood}.` : ""}`;
+    confirm.disabled = give === receive;
+  };
+
+  giveSelect.addEventListener("change", updateQuote);
+  receiveSelect.addEventListener("change", updateQuote);
+  confirm.addEventListener("click", () => handlers.onTrade(partnerScenario.id, giveSelect.value, receiveSelect.value));
+  updateQuote();
+  els.sidePanel.classList.remove("is-hidden");
 }
 
 export function openBuildPanel(state, onStartPlacement) {
