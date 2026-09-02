@@ -1,4 +1,5 @@
 import { ETXE_WORK_RADIUS_KM, getResidenceCapacity, getResidencePopulation } from "./simulation.js";
+import { getScenarioProducedResources, getTradeDistanceKm, getResourceLabel } from "./commerce.js";
 
 const PLAYABLE_BOUNDS = window.L.latLngBounds(
   [42.88, -2.42],
@@ -21,7 +22,8 @@ function markerSvg(kind) {
     pasture: '<path d="M7 11.5c0-2.5 2-4.5 4.5-4.5H15c2.8 0 5 2.2 5 5v2.5h-2v4h-2v-4H9v4H7v-4H5.5A1.5 1.5 0 0 1 4 13v-1.5h3Z"/><path d="M7 11.5V8.8A2.8 2.8 0 0 0 4.2 6H3"/><circle cx="16.5" cy="10" r=".7"/>',
     mine: '<path d="m7 6 10 10M17 6 7 16"/><path d="M5 5h5M14 5h5"/>',
     project: '<path d="M5 18h14M7 18l2-9h6l2 9M10 9V6h4v3"/>',
-    scenario: '<path d="M12 3l2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z"/>'
+    scenario: '<path d="M12 3l2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z"/>',
+    trade: '<path d="M4 7h13"/><path d="m14 4 3 3-3 3"/><path d="M20 17H7"/><path d="m10 14-3 3 3 3"/>'
   };
 
   return `<svg viewBox="0 0 24 24" aria-hidden="true">${icons[kind] ?? icons.project}</svg>`;
@@ -94,8 +96,9 @@ export function createMap(onMapClick) {
 
   const gameLayer = window.L.layerGroup().addTo(map);
   const previewLayer = window.L.layerGroup().addTo(map);
+  const commerceLayer = window.L.layerGroup().addTo(map);
 
-  return { map, gameLayer, previewLayer };
+  return { map, gameLayer, previewLayer, commerceLayer };
 }
 
 export function showScenarioPreviews(mapContext, scenarios, onChoose) {
@@ -115,6 +118,43 @@ export function showScenarioPreviews(mapContext, scenarios, onChoose) {
 
 export function clearScenarioPreviews(mapContext) {
   mapContext.previewLayer.clearLayers();
+}
+
+export function showCommercePartners(mapContext, scenarios, activeScenarioId, state, onChoose) {
+  mapContext.commerceLayer.clearLayers();
+
+  const partners = scenarios.filter((scenario) => scenario.id !== activeScenarioId);
+  for (const scenario of partners) {
+    const produced = getScenarioProducedResources(scenario);
+    const distanceKm = getTradeDistanceKm(state, scenario);
+    const marker = window.L.marker(scenario.center, {
+      icon: divIcon("trade", "commerce")
+    });
+
+    const producedText = produced.map((resource) => getResourceLabel(resource)).join(", ");
+    marker.bindPopup(
+      `<strong>${scenario.familyName}</strong><br><span>${scenario.placeName}</span><br><span>${distanceKm.toFixed(1)} km away</span><br><span>Produces: ${producedText || "nothing tradable"}</span>`
+    );
+    marker.bindTooltip(`${scenario.familyName} · trade`, { direction: "top" });
+    marker.on("click", () => onChoose?.(scenario.id));
+    marker.addTo(mapContext.commerceLayer);
+  }
+
+  const points = [
+    ...state.residences.map((residence) => residence.coords),
+    ...partners.map((scenario) => scenario.center)
+  ];
+  if (points.length > 1) {
+    mapContext.map.fitBounds(window.L.latLngBounds(points), {
+      paddingTopLeft: [28, 130],
+      paddingBottomRight: [28, 100],
+      maxZoom: 11
+    });
+  }
+}
+
+export function clearCommercePartners(mapContext) {
+  mapContext.commerceLayer.clearLayers();
 }
 
 export function renderGameState(mapContext, state, handlers = {}) {
