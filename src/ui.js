@@ -1,4 +1,12 @@
-import { BUILD_TYPES, WORK_AGE, getCurrentSeason, getLivingPeople } from "./simulation.js";
+import {
+  BUILD_TYPES,
+  ETXE_WORK_RADIUS_KM,
+  WORK_AGE,
+  getCurrentSeason,
+  getLivingPeople,
+  getResidenceCapacity,
+  getResidencePopulation
+} from "./simulation.js";
 import { OCCUPATIONS } from "./scenarios.js";
 
 const els = {
@@ -151,13 +159,12 @@ export function openFamilyPanel(state, handlers) {
 
   const residencesHtml = state.residences
     .map((residence) => {
-      const residents = getLivingPeople(state).filter(
-        (person) => person.residenceId === residence.id
-      ).length;
+      const residents = getResidencePopulation(state, residence.id);
+      const capacity = getResidenceCapacity(residence);
       return `
         <div class="etxe-row">
-          <div class="etxe-head"><strong>${residence.name}</strong><span>${residents} people</span></div>
-          <span class="muted">Founded ${residence.foundedYear}</span>
+          <div class="etxe-head"><strong>${residence.name}</strong><span>${residents}/${capacity} people</span></div>
+          <span class="muted">Founded ${residence.foundedYear} · ${ETXE_WORK_RADIUS_KM} km work radius</span>
         </div>
       `;
     })
@@ -227,10 +234,13 @@ function personRow(state, person) {
       `<option value="${occupation}" ${occupation === person.occupation ? "selected" : ""}>${occupation}</option>`
   ).join("");
   const residenceOptions = state.residences
-    .map(
-      (residence) =>
-        `<option value="${residence.id}" ${residence.id === person.residenceId ? "selected" : ""}>${residence.name}</option>`
-    )
+    .map((residence) => {
+      const residents = getResidencePopulation(state, residence.id);
+      const capacity = getResidenceCapacity(residence);
+      const isCurrent = residence.id === person.residenceId;
+      const full = residents >= capacity && !isCurrent;
+      return `<option value="${residence.id}" ${isCurrent ? "selected" : ""} ${full ? "disabled" : ""}>${residence.name} (${residents}/${capacity})${full ? " — full" : ""}</option>`;
+    })
     .join("");
 
   return `
@@ -319,11 +329,19 @@ export function openResidencePanel(state, residenceId) {
   const residents = getLivingPeople(state).filter(
     (person) => person.residenceId === residence.id
   );
+  const capacity = getResidenceCapacity(residence);
   const assets = state.assets.filter((asset) => asset.residenceId === residence.id);
 
   els.panelKicker.textContent = "ETXE";
   els.panelTitle.textContent = residence.name;
   els.panelContent.innerHTML = `
+    <section class="panel-section">
+      <div class="etxe-capacity-card">
+        <strong>👥 ${residents.length}/${capacity}</strong>
+        <span>${residents.length >= capacity ? "Full — no births or additional residents" : `${capacity - residents.length} spaces available`}</span>
+        <small>Work radius: ${ETXE_WORK_RADIUS_KM} km</small>
+      </div>
+    </section>
     <section class="panel-section">
       <h3>Residents</h3>
       ${residents.map((person) => `<div class="asset-row"><strong>${person.givenName} ${person.surname}</strong><span class="muted">${person.age} · ${person.occupation}</span></div>`).join("") || '<p class="muted">No residents yet.</p>'}
@@ -369,8 +387,8 @@ export function showPlacement(type) {
   const definition = BUILD_TYPES[type];
   els.placementText.textContent =
     type === "field"
-      ? "Tap within 5 km of one of your etxeak to clear a field."
-      : "Tap the map where the new etxe should be built.";
+      ? `Tap within ${ETXE_WORK_RADIUS_KM} km of one of your etxeak to clear a field.`
+      : `Tap within ${ETXE_WORK_RADIUS_KM} km of an existing etxe so builders can reach the site.`;
   els.placementBanner.classList.remove("is-hidden");
   closePanel();
 }
