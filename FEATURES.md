@@ -130,6 +130,7 @@ Marriage payment:
 - food value = **1**;
 - wood value = **2**;
 - stone value = **3**;
+- livestock value = **3**;
 - payment is made with one chosen resource type in MVP-0;
 - because resources are indivisible, payment rounds upward to the next whole resource when an exact value is impossible.
 
@@ -188,7 +189,8 @@ At minimum, the simulation should support enough resource flow to make seasonal 
   - pasture → livestock and food;
   - forest → wood;
   - mine → stone.
-- Resource values are **food = 1, wood = 2, stone = 3**. Livestock currently has no commerce value and cannot be traded through this system.
+- Resource values are **food = 1, wood = 2, stone = 3, livestock = 3**.
+- Pasture-producing families can sell livestock as well as food.
 - Receiving 1 unit costs **5× the value of the received resource**.
 - The player chooses one valued resource type to pay with; the required number of whole units is rounded upward, so an imperfect value match costs slightly more.
 - Every trade also consumes **1 food per started 50 km** between that family and the player's nearest etxe.
