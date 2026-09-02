@@ -46,6 +46,8 @@ Still designed but not yet implemented in MVP-0:
 
 One turn equals one season. Four seasons form a year.
 
+The optional season timer can advance automatically. Automatic passage must show the **same complete season summary and notifications** as pressing **Next season**; the timer pauses while the summary is open and resumes after the player continues.
+
 By default, the UI automatically advances one season every **7 seconds**. The player can change the delay from **1–300 seconds**, pause/resume automatic progression, or use the manual **Next season** action. The wall-clock timer is only UI orchestration: every transition still calls the same deterministic seasonal simulation step.
 
 ## Seasonal economy
@@ -195,3 +197,15 @@ The MVP succeeds if playing a single family is already interesting because the p
 **people + seasonal labour + resources + construction + geographic expansion**
 
 and can naturally grow from one etxe into several family-controlled etxeak.
+
+
+## UI principles
+
+- The map is the primary surface; HUD elements should occupy as little screen area as practical.
+- Family identity and season/timer controls use compact top HUD elements.
+- Resources use a single compact row rather than a tall panel.
+- Zoom and map-layer controls live together on the right edge.
+- Map entities use small pictographic markers rather than unexplained letter codes.
+- Family and Build are secondary actions; **Next season** remains the primary bottom action.
+- Selecting an etxe or productive asset opens contextual detail rather than permanently occupying map space.
+- The basemap is visually softened so terrain and gameplay markers remain more prominent than modern map detail.
