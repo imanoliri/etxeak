@@ -240,7 +240,7 @@ When a season resolves, its results are shown directly in the main game UI rathe
 - every resource type in the top bar has an emoji;
 - resource changes appear as signed deltas such as **+9** or **-4** beside the current total;
 - map locations use compact **color-coded pictograms** rather than emoji overlays; fields use a wheat pictogram and pastures use a sheep pictogram;
-- a field that could not be sown in spring specifically because **no seed food was available** receives a visible **red warning ring** until the next spring sowing attempt; lack of a Farmer may still prevent sowing, but does not use this red-ring warning;
+- a field that could not be sown in spring specifically because **no seed food was available** receives a visible **red warning ring** until the next spring sowing attempt; if no Farmer is available for field work, the field simply remains unworked and **no failure notification is shown**;
 - every location worked during the completed season receives a visible **👤** worker marker (with a count when multiple workers were applied);
 - the non-blocking season notification strip only shows **notable events and warnings**; routine production, consumption, sowing/tending/harvest, and construction-work progress are intentionally omitted because those outcomes are already represented by resource deltas and map activity markers.
 
