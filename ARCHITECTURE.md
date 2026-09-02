@@ -419,9 +419,11 @@ Commerce is intentionally shallow:
 - entering Commerce mode reveals the other scenario locations and fits the map to them;
 - a contact's saleable resources are derived from its configured productive assets;
 - valued resources are food = 1, wood = 2, stone = 3;
-- receiving one unit costs 5× that resource's value;
-- the player pays with whole units of one selected valued resource, rounded upward when the target value cannot be matched exactly;
-- transport additionally costs 1 food per started 50 km from the player's nearest etxe;
+- barter uses equal intrinsic resource value: food = 1, wood = 2, stone = 3, livestock = 3;
+- the total value of the requested received quantity is the target value;
+- the player pays with whole units of one selected valued resource, using `ceil(target value / payment-resource value)`, so any indivisible mismatch is lost by the player;
+- rounding is applied once to the whole requested trade, not separately per received unit;
+- transport is outside the barter value and additionally consumes 1 food per started 50 km from the player's nearest etxe;
 - successful trades record distinct calendar years per partner family;
 - the contact has no simulated inventory, labour, demography, preferences, or price response.
 
