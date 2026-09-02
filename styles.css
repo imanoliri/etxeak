@@ -315,6 +315,69 @@ select {
   text-transform: none;
 }
 
+.genealogy-tree {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  border: 1px solid rgba(23, 38, 31, 0.1);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.48);
+}
+
+.genealogy-couple {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.genealogy-link {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1rem;
+  opacity: 0.48;
+}
+
+.genealogy-stem {
+  width: 1px;
+  height: 13px;
+  background: rgba(23, 38, 31, 0.25);
+}
+
+.genealogy-children {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  width: 100%;
+  border-top: 1px solid rgba(23, 38, 31, 0.18);
+  padding-top: 10px;
+}
+
+.genealogy-person {
+  display: grid;
+  min-width: 94px;
+  gap: 2px;
+  border-radius: 9px;
+  background: rgba(23, 38, 31, 0.07);
+  padding: 7px 9px;
+  text-align: center;
+}
+
+.genealogy-person strong {
+  font-size: 0.75rem;
+}
+
+.genealogy-person small {
+  font-size: 0.64rem;
+  opacity: 0.62;
+}
+
+.genealogy-person.is-deceased {
+  opacity: 0.48;
+}
+
 .progress-track {
   height: 7px;
   overflow: hidden;
