@@ -187,10 +187,17 @@ export function renderGameState(mapContext, state, handlers = {}) {
   });
 
   state.assets.forEach((asset) => {
+    const sowingFailed = asset.type === "field" && Boolean(asset.state?.sowingFailed);
+    const markerClass = sowingFailed ? "asset sowing-failed" : "asset";
     const marker = window.L.marker(asset.coords, {
-      icon: divIcon(markerKinds[asset.type] ?? "project", "asset")
+      icon: divIcon(markerKinds[asset.type] ?? "project", markerClass)
     });
-    marker.bindTooltip(asset.name, { direction: "top" });
+    const failureText = sowingFailed
+      ? asset.state?.sowingFailureReason === "no-seed"
+        ? " · sowing failed: no seed"
+        : " · sowing failed: no farmer"
+      : "";
+    marker.bindTooltip(`${asset.name}${failureText}`, { direction: "top" });
     marker.on("click", () => handlers.onAsset?.(asset.id));
     marker.addTo(mapContext.gameLayer);
   });
