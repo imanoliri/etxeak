@@ -25,7 +25,6 @@ import {
   renderScenarioSelection,
   renderSeasonTimer,
   showPlacement,
-  showSummary,
   showToast,
   startGameUI
 } from "./ui.js";
@@ -42,7 +41,7 @@ let autoplayPaused = false;
 let remainingMs = autoplaySeconds * 1000;
 let deadlineMs = null;
 let timerId = null;
-let resumeAfterSummary = false;
+let lastSeasonSummary = null;
 
 const mapContext = createMap(handleMapClick);
 
@@ -53,7 +52,6 @@ bindStaticActions({
   onNextSeason: handleNextSeason,
   onToggleAutoplay: toggleAutoplay,
   onTimerSeconds: setAutoplaySeconds,
-  onCloseSummary: handleSummaryClosed,
   onCancelPlacement: cancelPlacement
 });
 
@@ -66,6 +64,7 @@ function startScenario(scenarioId) {
   if (!scenario) return;
 
   state = createGame(scenario);
+  lastSeasonSummary = null;
   clearScenarioPreviews(mapContext);
   startGameUI(state);
   focusOn(mapContext, scenario.center, 13);
@@ -76,7 +75,7 @@ function startScenario(scenarioId) {
 
 function refresh() {
   if (!state) return;
-  renderHud(state);
+  renderHud(state, lastSeasonSummary);
   refreshMap();
 }
 
@@ -84,7 +83,8 @@ function refreshMap() {
   if (!state) return;
   renderGameState(mapContext, state, {
     onResidence: (residenceId) => openResidencePanel(state, residenceId),
-    onAsset: (assetId) => openAssetPanel(state, assetId)
+    onAsset: (assetId) => openAssetPanel(state, assetId),
+    seasonSummary: lastSeasonSummary
   });
 }
 
@@ -141,41 +141,25 @@ function handleNextSeason() {
   if (!state) return;
 
   const wasRunning = !autoplayPaused;
-  if (wasRunning) {
-    pauseAutoplay();
-    resumeAfterSummary = true;
-  } else {
-    resumeAfterSummary = false;
-  }
+  resolveSeason();
+  showToast("Season resolved. Results are shown on the map and resource bar.");
 
-  const summary = resolveSeason();
-  showSummary(summary);
-}
-
-function handleSummaryClosed() {
-  if (!resumeAfterSummary) return;
-  resumeAfterSummary = false;
-  autoplayPaused = false;
-  resetAutoplayCountdown();
+  if (wasRunning) resetAutoplayCountdown();
 }
 
 function resolveSeason() {
-  const summary = advanceSeason(state);
+  lastSeasonSummary = advanceSeason(state);
   refresh();
-  return summary;
+  return lastSeasonSummary;
 }
 
 function resolveSeasonAutomatically() {
   if (!state || autoplayPaused) return;
 
-  // Automatic season passage must surface exactly the same information as
-  // pressing "Next season". Pause the timer while the summary is open, then
-  // resume with a fresh countdown when the player continues.
-  pauseAutoplay();
-  resumeAfterSummary = true;
-
-  const summary = resolveSeason();
-  showSummary(summary);
+  clearTimer();
+  deadlineMs = null;
+  resolveSeason();
+  resetAutoplayCountdown();
 }
 
 function toggleAutoplay() {
@@ -183,11 +167,9 @@ function toggleAutoplay() {
 
   if (autoplayPaused) {
     autoplayPaused = false;
-    resumeAfterSummary = false;
     startAutoplayTimer(false);
   } else {
     pauseAutoplay();
-    resumeAfterSummary = false;
   }
 }
 
