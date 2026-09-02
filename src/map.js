@@ -12,22 +12,13 @@ const markerKinds = {
   mine: "mine"
 };
 
-const markerEmoji = {
-  home: "🏠",
-  field: "🌾",
-  forest: "🌲",
-  pasture: "🐑",
-  mine: "⛏️",
-  project: "🛠️",
-  scenario: "👪"
-};
 
 function markerSvg(kind) {
   const icons = {
     home: '<path d="M4 11.5 12 5l8 6.5v8H14v-5h-4v5H4z"/>',
-    field: '<path d="M4 6h16v12H4z"/><path d="M4 10h16M4 14h16M9 6v12M15 6v12"/>',
+    field: '<path d="M12 21V5"/><path d="M12 8c-3 0-5-1.8-5-4 3 0 5 1.8 5 4Z"/><path d="M12 11c3 0 5-1.8 5-4-3 0-5 1.8-5 4Z"/><path d="M12 14c-3 0-5-1.8-5-4 3 0 5 1.8 5 4Z"/><path d="M12 17c3 0 5-1.8 5-4-3 0-5 1.8-5 4Z"/>',
     forest: '<path d="M12 3 7 10h3l-5 7h5v4h4v-4h5l-5-7h3z"/>',
-    pasture: '<path d="M4 17c3-4 5-4 8 0s5 4 8 0"/><path d="M5 12c2-2 4-2 6 0s4 2 8 0"/>',
+    pasture: '<path d="M7 11.5c0-2.5 2-4.5 4.5-4.5H15c2.8 0 5 2.2 5 5v2.5h-2v4h-2v-4H9v4H7v-4H5.5A1.5 1.5 0 0 1 4 13v-1.5h3Z"/><path d="M7 11.5V8.8A2.8 2.8 0 0 0 4.2 6H3"/><circle cx="16.5" cy="10" r=".7"/>',
     mine: '<path d="m7 6 10 10M17 6 7 16"/><path d="M5 5h5M14 5h5"/>',
     project: '<path d="M5 18h14M7 18l2-9h6l2 9M10 9V6h4v3"/>',
     scenario: '<path d="M12 3l2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z"/>'
@@ -39,7 +30,7 @@ function markerSvg(kind) {
 function divIcon(kind, className = "", badgeText = "") {
   return window.L.divIcon({
     className: "",
-    html: `<div class="marker-stack"><span class="marker-emoji" aria-hidden="true">${markerEmoji[kind] ?? "📍"}</span><div class="game-marker ${className}" data-kind="${kind}">${markerSvg(kind)}</div>${badgeText ? `<span class="marker-capacity">${badgeText}</span>` : ""}</div>`,
+    html: `<div class="marker-stack"><div class="game-marker ${className}" data-kind="${kind}">${markerSvg(kind)}</div>${badgeText ? `<span class="marker-capacity">${badgeText}</span>` : ""}</div>`,
     iconSize: [38, 38],
     iconAnchor: [19, 19]
   });
