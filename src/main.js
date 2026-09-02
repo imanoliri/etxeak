@@ -50,7 +50,7 @@ let deadlineMs = null;
 let timerId = null;
 let lastSeasonSummary = null;
 let commerceMode = false;
-let commerceSelection = { giveResource: null, receiveResource: null };
+let commerceSelection = { giveResource: null, receiveResource: null, amount: 1 };
 let pendingEtxeOpening = null;
 
 const mapContext = createMap(handleMapClick);
@@ -277,17 +277,17 @@ function openTradePartner(scenarioId) {
   );
 }
 
-function handleCommerceSelectionChange(giveResource, receiveResource) {
-  commerceSelection = { giveResource, receiveResource };
+function handleCommerceSelectionChange(giveResource, receiveResource, amount = 1) {
+  commerceSelection = { giveResource, receiveResource, amount };
 }
 
-function handleTrade(scenarioId, giveResource, receiveResource) {
+function handleTrade(scenarioId, giveResource, receiveResource, amount = 1) {
   if (!state) return;
-  commerceSelection = { giveResource, receiveResource };
+  commerceSelection = { giveResource, receiveResource, amount };
   const partner = STARTING_SCENARIOS.find((scenario) => scenario.id === scenarioId && scenario.id !== state.scenarioId);
   if (!partner) return;
 
-  const result = tradeWithFamily(state, partner, giveResource, receiveResource);
+  const result = tradeWithFamily(state, partner, giveResource, receiveResource, amount);
   showToast(result.message);
   if (!result.ok) return;
 
