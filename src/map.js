@@ -3,25 +3,39 @@ const PLAYABLE_BOUNDS = window.L.latLngBounds(
   [43.48, -1.65]
 );
 
-const markerCodes = {
-  field: "F",
-  forest: "W",
-  pasture: "P",
-  mine: "M"
+const markerKinds = {
+  field: "field",
+  forest: "forest",
+  pasture: "pasture",
+  mine: "mine"
 };
 
-function divIcon(label, className = "") {
+function markerSvg(kind) {
+  const icons = {
+    home: '<path d="M4 11.5 12 5l8 6.5v8H14v-5h-4v5H4z"/>',
+    field: '<path d="M4 6h16v12H4z"/><path d="M4 10h16M4 14h16M9 6v12M15 6v12"/>',
+    forest: '<path d="M12 3 7 10h3l-5 7h5v4h4v-4h5l-5-7h3z"/>',
+    pasture: '<path d="M4 17c3-4 5-4 8 0s5 4 8 0"/><path d="M5 12c2-2 4-2 6 0s4 2 8 0"/>',
+    mine: '<path d="m7 6 10 10M17 6 7 16"/><path d="M5 5h5M14 5h5"/>',
+    project: '<path d="M5 18h14M7 18l2-9h6l2 9M10 9V6h4v3"/>',
+    scenario: '<path d="M12 3l2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z"/>'
+  };
+
+  return `<svg viewBox="0 0 24 24" aria-hidden="true">${icons[kind] ?? icons.project}</svg>`;
+}
+
+function divIcon(kind, className = "") {
   return window.L.divIcon({
     className: "",
-    html: `<div class="game-marker ${className}">${label}</div>`,
-    iconSize: [28, 28],
-    iconAnchor: [14, 14]
+    html: `<div class="game-marker ${className}" data-kind="${kind}">${markerSvg(kind)}</div>`,
+    iconSize: [30, 30],
+    iconAnchor: [15, 15]
   });
 }
 
 export function createMap(onMapClick) {
   const map = window.L.map("map", {
-    zoomControl: true,
+    zoomControl: false,
     attributionControl: true,
     minZoom: 9,
     maxZoom: 19,
@@ -56,6 +70,8 @@ export function createMap(onMapClick) {
     { collapsed: true, position: "topright" }
   ).addTo(map);
 
+  window.L.control.zoom({ position: "topright" }).addTo(map);
+
   window.L.rectangle(PLAYABLE_BOUNDS, {
     color: "#263b31",
     weight: 2,
@@ -84,7 +100,7 @@ export function showScenarioPreviews(mapContext, scenarios, onChoose) {
 
   scenarios.forEach((scenario) => {
     const marker = window.L.marker(scenario.center, {
-      icon: divIcon("S")
+      icon: divIcon("scenario")
     });
     marker.bindPopup(
       `<strong>${scenario.familyName}</strong><br><span>${scenario.placeName}</span>`
@@ -106,7 +122,7 @@ export function renderGameState(mapContext, state, handlers = {}) {
       (person) => person.alive && person.residenceId === residence.id
     ).length;
     const marker = window.L.marker(residence.coords, {
-      icon: divIcon("E")
+      icon: divIcon("home")
     });
     marker.bindPopup(
       `<strong>${residence.name}</strong><br><span>${residents} resident${residents === 1 ? "" : "s"}</span>`
@@ -117,7 +133,7 @@ export function renderGameState(mapContext, state, handlers = {}) {
 
   state.assets.forEach((asset) => {
     const marker = window.L.marker(asset.coords, {
-      icon: divIcon(markerCodes[asset.type] ?? "A", "asset")
+      icon: divIcon(markerKinds[asset.type] ?? "project", "asset")
     });
     marker.bindTooltip(asset.name, { direction: "top" });
     marker.on("click", () => handlers.onAsset?.(asset.id));
@@ -126,7 +142,7 @@ export function renderGameState(mapContext, state, handlers = {}) {
 
   state.projects.forEach((project) => {
     const marker = window.L.marker(project.coords, {
-      icon: divIcon("…", "project")
+      icon: divIcon("project", "project")
     });
     marker.bindTooltip(
       `${project.name}: ${project.progress}/${project.workRequired} work`,
