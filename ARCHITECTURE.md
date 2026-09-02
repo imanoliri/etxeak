@@ -401,6 +401,28 @@ Each turn resolves:
 
 No relationship, diplomacy, external marriage, inter-family market, feud, or reputation phase exists in MVP-0.
 
+### Map implementation
+
+The first map shell uses **Leaflet** as a UI-only rendering layer. Simulation state must not depend on Leaflet objects.
+
+The initial MVP-0 geographic viewport is approximately:
+
+- south: **42.88° N**
+- north: **43.48° N**
+- west: **2.42° W**
+- east: **1.65° W**
+
+This is an intentionally simple bounding box matching the selected regional scope rather than a historical or administrative border. Simulation entities should store ordinary latitude/longitude coordinates so the rendering technology can be replaced later without changing domain state.
+
+The initial UI offers:
+
+- OpenTopoMap as the default terrain-oriented basemap;
+- OpenStreetMap as an alternate layer;
+- constrained panning around the selected region;
+- responsive full-screen rendering for mobile and desktop.
+
+External map tiles are presentation data only. Historical places, buildings, productive assets, family locations, paths, and other gameplay-relevant geography must live in repository-owned campaign data rather than being inferred from tile labels.
+
 ### MVP-0 interfaces
 
 The first playable version needs only:
