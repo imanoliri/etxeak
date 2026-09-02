@@ -171,6 +171,18 @@ The first map prototype is implemented as a full-screen interactive topographic 
 - Starting scenarios are now defined and shown as selectable map locations before play.
 - After selection, only the chosen family's etxe, assets, and projects are rendered.
 
+## Direct seasonal feedback
+
+When a season resolves, its results are shown directly in the main game UI rather than requiring a blocking summary modal:
+
+- every resource type in the top bar has an emoji;
+- resource changes appear as signed deltas such as **+9** or **-4** beside the current total;
+- buildings and productive locations have type-specific emoji above their map markers;
+- every location worked during the completed season receives a visible **👤** worker marker (with a count when multiple workers were applied);
+- all season-resolution messages remain available in a compact, non-blocking results strip on the map.
+
+The same feedback is used for manual and automatic season advancement.
+
 ## Explicit exclusions
 
 MVP-0 has none of the following:
