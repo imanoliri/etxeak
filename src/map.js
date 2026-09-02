@@ -1,3 +1,5 @@
+import { ETXE_WORK_RADIUS_KM, getResidenceCapacity, getResidencePopulation } from "./simulation.js";
+
 const PLAYABLE_BOUNDS = window.L.latLngBounds(
   [42.88, -2.42],
   [43.48, -1.65]
@@ -34,12 +36,12 @@ function markerSvg(kind) {
   return `<svg viewBox="0 0 24 24" aria-hidden="true">${icons[kind] ?? icons.project}</svg>`;
 }
 
-function divIcon(kind, className = "") {
+function divIcon(kind, className = "", badgeText = "") {
   return window.L.divIcon({
     className: "",
-    html: `<div class="marker-stack"><span class="marker-emoji" aria-hidden="true">${markerEmoji[kind] ?? "📍"}</span><div class="game-marker ${className}" data-kind="${kind}">${markerSvg(kind)}</div></div>`,
-    iconSize: [30, 30],
-    iconAnchor: [15, 15]
+    html: `<div class="marker-stack"><span class="marker-emoji" aria-hidden="true">${markerEmoji[kind] ?? "📍"}</span><div class="game-marker ${className}" data-kind="${kind}">${markerSvg(kind)}</div>${badgeText ? `<span class="marker-capacity">${badgeText}</span>` : ""}</div>`,
+    iconSize: [38, 38],
+    iconAnchor: [19, 19]
   });
 }
 
@@ -129,14 +131,25 @@ export function renderGameState(mapContext, state, handlers = {}) {
   const seasonSummary = handlers.seasonSummary ?? null;
 
   state.residences.forEach((residence) => {
-    const residents = state.people.filter(
-      (person) => person.alive && person.residenceId === residence.id
-    ).length;
+    const residents = getResidencePopulation(state, residence.id);
+    const capacity = getResidenceCapacity(residence);
+
+    window.L.circle(residence.coords, {
+      radius: ETXE_WORK_RADIUS_KM * 1000,
+      color: "#315642",
+      weight: 1,
+      opacity: 0.24,
+      fillColor: "#315642",
+      fillOpacity: 0.025,
+      dashArray: "4 7",
+      interactive: false
+    }).addTo(mapContext.gameLayer);
+
     const marker = window.L.marker(residence.coords, {
-      icon: divIcon("home")
+      icon: divIcon("home", "", `${residents}/${capacity}`)
     });
     marker.bindPopup(
-      `<strong>${residence.name}</strong><br><span>${residents} resident${residents === 1 ? "" : "s"}</span>`
+      `<strong>${residence.name}</strong><br><span>${residents}/${capacity} residents</span><br><span>${ETXE_WORK_RADIUS_KM} km work radius</span>`
     );
     marker.on("click", () => handlers.onResidence?.(residence.id));
     marker.addTo(mapContext.gameLayer);
