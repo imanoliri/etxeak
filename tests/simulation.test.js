@@ -233,7 +233,7 @@ test("only seed shortages mark fields for the red sowing warning ring", () => {
   );
 });
 
-test("missing farmers do not mark fields for the red sowing warning ring", () => {
+test("missing farmers do not produce field failure messages", () => {
   const state = createGame(STARTING_SCENARIOS[0]);
   state.people
     .filter((person) => person.alive && person.age >= 12 && person.occupation === "Farmer")
@@ -241,12 +241,32 @@ test("missing farmers do not mark fields for the red sowing warning ring", () =>
       person.occupation = "Forestry";
     });
 
-  const summary = advanceSeason(state);
+  const springSummary = advanceSeason(state);
   const fields = state.assets.filter((asset) => asset.type === "field");
 
   assert.ok(fields.every((asset) => asset.state.sowingFailed === false));
-  assert.ok(
-    summary.messages.some((message) => message.includes("no farmer was available"))
+  assert.equal(
+    springSummary.messages.some((message) => message.toLowerCase().includes("farmer")),
+    false
+  );
+});
+
+test("a sown field with no farmer in autumn fails silently", () => {
+  const state = createGame(STARTING_SCENARIOS[0]);
+
+  advanceSeason(state);
+  state.people
+    .filter((person) => person.alive && person.age >= 12 && person.occupation === "Farmer")
+    .forEach((person) => {
+      person.occupation = "Forestry";
+    });
+
+  advanceSeason(state);
+  const autumnSummary = advanceSeason(state);
+
+  assert.equal(
+    autumnSummary.messages.some((message) => message.includes("harvest was lost")),
+    false
   );
 });
 
