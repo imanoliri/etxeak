@@ -50,6 +50,7 @@ let deadlineMs = null;
 let timerId = null;
 let lastSeasonSummary = null;
 let commerceMode = false;
+let commerceSelection = { giveResource: null, receiveResource: null };
 let pendingEtxeOpening = null;
 
 const mapContext = createMap(handleMapClick);
@@ -268,13 +269,21 @@ function openTradePartner(scenarioId) {
   openCommercePanel(
     state,
     partner,
-    { onTrade: handleTrade },
-    { giveResource, receiveResource }
+    {
+      onTrade: handleTrade,
+      onSelectionChange: handleCommerceSelectionChange
+    },
+    commerceSelection
   );
+}
+
+function handleCommerceSelectionChange(giveResource, receiveResource) {
+  commerceSelection = { giveResource, receiveResource };
 }
 
 function handleTrade(scenarioId, giveResource, receiveResource) {
   if (!state) return;
+  commerceSelection = { giveResource, receiveResource };
   const partner = STARTING_SCENARIOS.find((scenario) => scenario.id === scenarioId && scenario.id !== state.scenarioId);
   if (!partner) return;
 
@@ -283,7 +292,15 @@ function handleTrade(scenarioId, giveResource, receiveResource) {
   if (!result.ok) return;
 
   refresh();
-  openCommercePanel(state, partner, { onTrade: handleTrade });
+  openCommercePanel(
+    state,
+    partner,
+    {
+      onTrade: handleTrade,
+      onSelectionChange: handleCommerceSelectionChange
+    },
+    commerceSelection
+  );
 }
 
 function handleSlaughter() {
