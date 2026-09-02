@@ -104,10 +104,10 @@ The scenarios should encourage different economic openings without requiring dif
 - The map shows **current residents / maximum capacity** directly on each etxe marker.
 - The etxe panel shows the same occupancy, available space, and work radius.
 - A full etxe cannot accept additional residents and does not generate new births until space becomes available.
-- Productive assets and construction projects can only be worked by eligible people whose current etxe is within **1 km** of that location.
-- Each etxe's 1 km working radius is drawn on the map as a subtle dashed circle.
+- Productive assets and construction projects can only be worked by eligible people whose current etxe is within **1.5 km** of that location.
+- Each etxe's 1.5 km working radius is drawn on the map as a subtle dashed circle.
 - New etxe construction must begin within the working radius of an existing etxe, allowing geographic expansion to proceed outward rather than teleporting construction labour across the map.
-- The 8-person capacity and 1 km radius are MVP-0 balance values, not final historical claims.
+- The 8-person capacity and 1.5 km radius are MVP-0 balance values, not final historical claims.
 
 ## Occupations and work
 
