@@ -402,8 +402,14 @@ export function openCommercePanel(state, partnerScenario, handlers, selection = 
     confirm.disabled = false;
   };
 
-  giveSelect.addEventListener("change", updateQuote);
-  receiveSelect.addEventListener("change", updateQuote);
+  giveSelect.addEventListener("change", () => {
+    handlers.onSelectionChange?.(giveSelect.value, receiveSelect.value);
+    updateQuote();
+  });
+  receiveSelect.addEventListener("change", () => {
+    handlers.onSelectionChange?.(giveSelect.value, receiveSelect.value);
+    updateQuote();
+  });
   confirm.addEventListener("click", () =>
     handlers.onTrade(
       partnerScenario.id,
@@ -411,6 +417,7 @@ export function openCommercePanel(state, partnerScenario, handlers, selection = 
       receiveSelect.value
     )
   );
+  handlers.onSelectionChange?.(giveSelect.value, receiveSelect.value);
   updateQuote();
   els.sidePanel.classList.remove("is-hidden");
 }
