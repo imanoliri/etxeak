@@ -30,7 +30,8 @@ Implemented on the current MVP-0 branch:
 - construction projects for new etxeak and fields;
 - Builder labour progressing projects over multiple seasons;
 - moving people between completed etxeak;
-- fixed-rate commerce with the unchosen family locations, including map zoom-out, production-limited exports, and distance food costs;
+- value-based commerce with the unchosen family locations, including map zoom-out, production-limited exports, distance food costs, and trade-year relationship tracking;
+- opening completed etxeak through a founding marriage: choose an eligible man, select the wife's family on the external-family map, pay the marriage value, then establish the couple as the etxe heads;
 - deterministic simulation tests run by Netlify before deploy.
 
 Still designed but not yet implemented in MVP-0:
@@ -105,10 +106,34 @@ The scenarios should encourage different economic openings without requiring dif
 - The map shows **current residents / maximum capacity** directly on each etxe marker.
 - The etxe panel shows the same occupancy, available space, and work radius.
 - A full etxe cannot accept additional residents and does not generate new births until space becomes available.
+- A newly constructed etxe begins **unopened**. It cannot accept ordinary residence moves until a founding couple has opened it.
 - Productive assets and construction projects can only be worked by eligible people whose current etxe is within **1.5 km** of that location.
 - Each etxe's 1.5 km working radius is drawn on the map as a subtle dashed circle.
 - New etxe construction must begin within the working radius of an existing etxe, allowing geographic expansion to proceed outward rather than teleporting construction labour across the map.
 - The 8-person capacity and 1.5 km radius are MVP-0 balance values, not final historical claims.
+
+## Opening a new etxe
+
+A completed etxe is only a building until a household is established there.
+
+1. Select the unopened etxe.
+2. Choose a living **working-age man** from the player's family who is unmarried and is not already head of another etxe.
+3. The map uses the same regional zoom-out as Commerce mode to show the other static family locations.
+4. Select the family the wife will come from.
+5. Pay the marriage value and open the etxe. The man moves there, the woman joins the player's genealogy, and both become heads of that etxe.
+
+Marriage payment:
+
+- base required value: **10**;
+- subtract **1** for each distinct calendar year in which the player previously completed at least one trade with the selected family;
+- minimum required value: **3**;
+- food value = **1**;
+- wood value = **2**;
+- stone value = **3**;
+- payment is made with one chosen resource type in MVP-0;
+- because resources are indivisible, payment rounds upward to the next whole resource when an exact value is impossible.
+
+Etxe heads are tied to the etxe they head and cannot simply be moved to another residence through the ordinary move control. Opened head couples can produce children under the current simplified annual demography rules.
 
 ## Occupations and work
 
@@ -163,8 +188,11 @@ At minimum, the simulation should support enough resource flow to make seasonal 
   - pasture → livestock and food;
   - forest → wood;
   - mine → stone.
-- A trade exchanges **5 units of one player resource for 1 unit of a resource the other family produces**.
+- Resource values are **food = 1, wood = 2, stone = 3**. Livestock currently has no commerce value and cannot be traded through this system.
+- Receiving 1 unit costs **5× the value of the received resource**.
+- The player chooses one valued resource type to pay with; the required number of whole units is rounded upward, so an imperfect value match costs slightly more.
 - Every trade also consumes **1 food per started 50 km** between that family and the player's nearest etxe.
+- A successful trade records that family as traded-with for the current calendar year; multiple trades in the same year still count as one relationship year for marriage discounts.
 - Distance uses the same geographic coordinates as the map, but trade calculations are simulation/domain logic rather than Leaflet state.
 - Static trade contacts have no finite stock in MVP-0. Dynamic inventories, prices, bargaining, markets, and autonomous trade belong to later systems.
 
@@ -216,7 +244,6 @@ MVP-0 has none of the following:
 - simulated neighbouring families;
 - diplomacy or reputation;
 - favours or reciprocal labour;
-- external marriage;
 - feuds or warfare;
 - Church/lordship/political systems;
 - complex inheritance disputes;
