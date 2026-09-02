@@ -1,4 +1,5 @@
 import { STARTING_SCENARIOS } from "./scenarios.js";
+import { tradeWithFamily } from "./commerce.js";
 import {
   advanceSeason,
   createGame,
@@ -8,22 +9,26 @@ import {
   startProject
 } from "./simulation.js";
 import {
+  clearCommercePartners,
   clearScenarioPreviews,
   createMap,
   focusOn,
   renderGameState,
+  showCommercePartners,
   showScenarioPreviews
 } from "./map.js";
 import {
   bindStaticActions,
   hidePlacement,
   openAssetPanel,
+  openCommercePanel,
   openBuildPanel,
   openFamilyPanel,
   openResidencePanel,
   renderHud,
   renderScenarioSelection,
   renderSeasonTimer,
+  setCommerceActive,
   showPlacement,
   showToast,
   startGameUI
@@ -42,12 +47,22 @@ let remainingMs = autoplaySeconds * 1000;
 let deadlineMs = null;
 let timerId = null;
 let lastSeasonSummary = null;
+let commerceMode = false;
 
 const mapContext = createMap(handleMapClick);
 
 bindStaticActions({
-  onFamily: () => state && openFamilyPanel(state, familyHandlers),
-  onBuild: () => state && openBuildPanel(state, beginPlacement),
+  onFamily: () => {
+    if (!state) return;
+    exitCommerceMode();
+    openFamilyPanel(state, familyHandlers);
+  },
+  onBuild: () => {
+    if (!state) return;
+    exitCommerceMode();
+    openBuildPanel(state, beginPlacement);
+  },
+  onCommerce: toggleCommerce,
   onSlaughter: handleSlaughter,
   onNextSeason: handleNextSeason,
   onToggleAutoplay: toggleAutoplay,
@@ -65,6 +80,9 @@ function startScenario(scenarioId) {
 
   state = createGame(scenario);
   lastSeasonSummary = null;
+  commerceMode = false;
+  setCommerceActive(false);
+  clearCommercePartners(mapContext);
   clearScenarioPreviews(mapContext);
   startGameUI(state);
   focusOn(mapContext, scenario.center, 13);
@@ -107,6 +125,7 @@ const familyHandlers = {
 };
 
 function beginPlacement(type) {
+  exitCommerceMode();
   placementType = type;
   showPlacement(type);
 }
@@ -131,6 +150,49 @@ function handleMapClick(coords) {
   refresh();
   openBuildPanel(state, beginPlacement);
   showToast(`${label} project started.`);
+}
+
+
+function toggleCommerce() {
+  if (!state) return;
+  if (commerceMode) {
+    exitCommerceMode();
+    return;
+  }
+
+  cancelPlacement();
+  commerceMode = true;
+  setCommerceActive(true);
+  showCommercePartners(mapContext, STARTING_SCENARIOS, state.scenarioId, state, openTradePartner);
+  showToast("Commerce: select another family location on the map.");
+}
+
+function exitCommerceMode(refocus = true) {
+  if (!commerceMode) return;
+  commerceMode = false;
+  setCommerceActive(false);
+  clearCommercePartners(mapContext);
+  if (refocus && state?.residences?.[0]) focusOn(mapContext, state.residences[0].coords, 13);
+}
+
+function openTradePartner(scenarioId) {
+  if (!state || !commerceMode) return;
+  const partner = STARTING_SCENARIOS.find((scenario) => scenario.id === scenarioId && scenario.id !== state.scenarioId);
+  if (!partner) return;
+  openCommercePanel(state, partner, { onTrade: handleTrade });
+}
+
+function handleTrade(scenarioId, giveResource, receiveResource) {
+  if (!state) return;
+  const partner = STARTING_SCENARIOS.find((scenario) => scenario.id === scenarioId && scenario.id !== state.scenarioId);
+  if (!partner) return;
+
+  const result = tradeWithFamily(state, partner, giveResource, receiveResource);
+  showToast(result.message);
+  if (!result.ok) return;
+
+  refresh();
+  openCommercePanel(state, partner, { onTrade: handleTrade });
 }
 
 function handleSlaughter() {
