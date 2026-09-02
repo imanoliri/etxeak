@@ -126,7 +126,7 @@ The current MVP-0 branch already supports:
 - automatically assigning an occupation when children reach working age, with player overrides;
 - changing working-age family members' occupations;
 - advancing automatically through Spring, Summer, Autumn, and Winter on a configurable timer (7 seconds by default), with pause/play and manual advance controls;
-- sowing, tending, harvesting, herding, forestry, mining, seasonal consumption, autumn slaughter, and visible failed-sowing warnings on fields;
+- sowing, tending, harvesting, herding, forestry, mining, seasonal consumption, autumn slaughter, and visible failed-sowing warnings only for missing seed reserves; unavailable Farmers leave fields unworked without a failure notification;
 - deterministic yearly aging, simple births, and deaths using placeholder prototype rates; yearly food shortages now raise mortality risk and reduce the chance of births;
 - starting multi-season projects for a new etxe or a new field;
 - completing construction through Builder labour, with builders automatically returning to their remembered previous occupation when no construction projects remain;
