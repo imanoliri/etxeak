@@ -2,13 +2,16 @@ import { OCCUPATIONS } from "./scenarios.js";
 
 export const SEASONS = ["Spring", "Summer", "Autumn", "Winter"];
 export const WORK_AGE = 12;
+export const ETXE_CAPACITY = 8;
+export const ETXE_WORK_RADIUS_KM = 5;
 
 export const BUILD_TYPES = {
   etxe: {
     label: "New etxe",
     cost: { wood: 8, stone: 4 },
     workRequired: 4,
-    placement: "anywhere",
+    placement: "near-etxe",
+    maxDistanceKm: ETXE_WORK_RADIUS_KM,
     resultType: "etxe"
   },
   field: {
@@ -40,7 +43,8 @@ export function createGame(scenario) {
         id: "etxe-1",
         name: scenario.familyName,
         coords: clone(scenario.center),
-        foundedYear: 1100
+        foundedYear: 1100,
+        capacity: scenario.etxeCapacity ?? ETXE_CAPACITY
       }
     ],
     assets: clone(scenario.assets),
@@ -77,6 +81,20 @@ export function getPopulation(state) {
   return getLivingPeople(state).length;
 }
 
+export function getResidencePopulation(state, residenceId) {
+  return getLivingPeople(state).filter((person) => person.residenceId === residenceId).length;
+}
+
+export function getResidenceCapacity(residence) {
+  return residence?.capacity ?? ETXE_CAPACITY;
+}
+
+export function hasResidenceCapacity(state, residenceId) {
+  const residence = state.residences.find((entry) => entry.id === residenceId);
+  if (!residence) return false;
+  return getResidencePopulation(state, residenceId) < getResidenceCapacity(residence);
+}
+
 export function getCurrentSeason(state) {
   return SEASONS[state.date.seasonIndex];
 }
@@ -89,12 +107,20 @@ export function chooseAutomaticOccupation(state, person) {
   if (!person || !canWork(person)) return "Unassigned";
 
   const residenceId = person.residenceId;
+  const residence = state.residences.find((entry) => entry.id === residenceId);
+  const nearbyAssets = residence
+    ? state.assets.filter((asset) => haversineKm(residence.coords, asset.coords) <= ETXE_WORK_RADIUS_KM)
+    : [];
+  const nearbyProjects = residence
+    ? state.projects.filter((project) => haversineKm(residence.coords, project.coords) <= ETXE_WORK_RADIUS_KM)
+    : [];
+
   const demand = new Map([
-    ["Farmer", state.assets.filter((asset) => asset.residenceId === residenceId && asset.type === "field").length],
-    ["Herder", state.assets.filter((asset) => asset.residenceId === residenceId && asset.type === "pasture").length],
-    ["Forestry", state.assets.filter((asset) => asset.residenceId === residenceId && asset.type === "forest").length],
-    ["Miner", state.assets.filter((asset) => asset.residenceId === residenceId && asset.type === "mine").length],
-    ["Builder", state.projects.length > 0 ? 1 : 0]
+    ["Farmer", nearbyAssets.filter((asset) => asset.type === "field").length],
+    ["Herder", nearbyAssets.filter((asset) => asset.type === "pasture").length],
+    ["Forestry", nearbyAssets.filter((asset) => asset.type === "forest").length],
+    ["Miner", nearbyAssets.filter((asset) => asset.type === "mine").length],
+    ["Builder", nearbyProjects.length > 0 ? 1 : 0]
   ]);
 
   const occupied = new Map();
@@ -130,6 +156,8 @@ export function movePerson(state, personId, residenceId) {
   const person = state.people.find((entry) => entry.id === personId && entry.alive);
   const residence = state.residences.find((entry) => entry.id === residenceId);
   if (!person || !residence) return false;
+  if (person.residenceId === residenceId) return true;
+  if (!hasResidenceCapacity(state, residenceId)) return false;
   person.residenceId = residenceId;
   return true;
 }
@@ -170,7 +198,10 @@ export function startProject(state, type, coords) {
     if (!nearest || nearest.distanceKm > definition.maxDistanceKm) {
       return {
         ok: false,
-        message: `A field must be within ${definition.maxDistanceKm} km of one of your etxeak.`
+        message:
+          type === "field"
+            ? `A field must be within ${definition.maxDistanceKm} km of one of your etxeak.`
+            : `A new etxe must be within ${definition.maxDistanceKm} km of an existing etxe so builders can reach it.`
       };
     }
     residenceId = nearest.residence.id;
@@ -254,7 +285,7 @@ function resolveProduction(state, messages, activities) {
     if (asset.type === "field") {
       resolveField(state, asset, season, pools, messages, activities);
     } else if (asset.type === "forest") {
-      const worker = takeWorker(pools, asset.residenceId, "Forestry");
+      const worker = takeWorkerNear(state, pools, asset.coords, "Forestry");
       if (worker) {
         recordActivity(activities, asset, worker);
         const amount = season === "Winter" ? 3 : 2;
@@ -262,7 +293,7 @@ function resolveProduction(state, messages, activities) {
         messages.push(`${asset.name}: +${amount} wood.`);
       }
     } else if (asset.type === "pasture") {
-      const worker = takeWorker(pools, asset.residenceId, "Herder");
+      const worker = takeWorkerNear(state, pools, asset.coords, "Herder");
       if (worker) {
         recordActivity(activities, asset, worker);
         if (season === "Spring") {
@@ -274,7 +305,7 @@ function resolveProduction(state, messages, activities) {
         }
       }
     } else if (asset.type === "mine") {
-      const worker = takeWorker(pools, asset.residenceId, "Miner");
+      const worker = takeWorkerNear(state, pools, asset.coords, "Miner");
       if (worker) {
         recordActivity(activities, asset, worker);
         state.stores.stone += 2;
@@ -285,7 +316,7 @@ function resolveProduction(state, messages, activities) {
 }
 
 function resolveField(state, asset, season, pools, messages, activities) {
-  const worker = takeWorker(pools, asset.residenceId, "Farmer");
+  const worker = takeWorkerNear(state, pools, asset.coords, "Farmer");
   const worked = Boolean(worker);
   if (worker) recordActivity(activities, asset, worker);
 
@@ -332,19 +363,31 @@ function createWorkerPools(state) {
 
   for (const person of getLivingPeople(state)) {
     if (!canWork(person) || person.occupation === "Unassigned") continue;
-
-    const key = `${person.residenceId}::${person.occupation}`;
-    if (!pools.has(key)) pools.set(key, []);
-    pools.get(key).push(person);
+    if (!pools.has(person.occupation)) pools.set(person.occupation, []);
+    pools.get(person.occupation).push(person);
   }
 
   return pools;
 }
 
-function takeWorker(pools, residenceId, occupation) {
-  const key = `${residenceId}::${occupation}`;
-  const available = pools.get(key) ?? [];
-  return available.shift() ?? null;
+function takeWorkerNear(state, pools, coords, occupation) {
+  const available = pools.get(occupation) ?? [];
+  let bestIndex = -1;
+  let bestDistance = Infinity;
+
+  for (let index = 0; index < available.length; index += 1) {
+    const person = available[index];
+    const residence = state.residences.find((entry) => entry.id === person.residenceId);
+    if (!residence) continue;
+    const distance = haversineKm(residence.coords, coords);
+    if (distance <= ETXE_WORK_RADIUS_KM && distance < bestDistance) {
+      bestIndex = index;
+      bestDistance = distance;
+    }
+  }
+
+  if (bestIndex < 0) return null;
+  return available.splice(bestIndex, 1)[0];
 }
 
 function recordActivity(activities, target, worker) {
@@ -359,21 +402,22 @@ function recordActivity(activities, target, worker) {
 }
 
 function resolveProjects(state, messages, activities) {
-  const builders = getLivingPeople(state).filter(
-    (person) => canWork(person) && person.occupation === "Builder"
-  );
-  let builderIndex = 0;
-
-  if (builders.length <= 0 || state.projects.length === 0) return;
+  const builderPools = createWorkerPools(state);
+  if ((builderPools.get("Builder")?.length ?? 0) <= 0 || state.projects.length === 0) return;
 
   for (const project of [...state.projects]) {
-    const availableBuilders = builders.length - builderIndex;
-    if (availableBuilders <= 0) break;
-
     const remaining = project.workRequired - project.progress;
-    const applied = Math.min(availableBuilders, remaining);
-    const appliedBuilders = builders.slice(builderIndex, builderIndex + applied);
-    builderIndex += applied;
+    const appliedBuilders = [];
+
+    while (appliedBuilders.length < remaining) {
+      const builder = takeWorkerNear(state, builderPools, project.coords, "Builder");
+      if (!builder) break;
+      appliedBuilders.push(builder);
+    }
+
+    if (appliedBuilders.length === 0) continue;
+
+    const applied = appliedBuilders.length;
     project.progress += applied;
 
     activities.push({
@@ -398,7 +442,8 @@ function completeProject(state, project, messages) {
       id: `etxe-${state.counters.residence++}`,
       name: `Etxe ${state.counters.residence - 1}`,
       coords: [...project.coords],
-      foundedYear: state.date.year
+      foundedYear: state.date.year,
+      capacity: ETXE_CAPACITY
     };
     state.residences.push(residence);
     messages.push(`${residence.name} was completed. Family members can now move there.`);
@@ -460,7 +505,12 @@ function resolveAnnualDemography(state, messages) {
     (person) => person.role === "head" && person.sex === "M"
   );
 
-  if (headMother && headFather && random(state) < 0.2) {
+  const parentsShareResidence =
+    headMother && headFather && headMother.residenceId === headFather.residenceId;
+  const birthResidenceHasCapacity =
+    headMother && hasResidenceCapacity(state, headMother.residenceId);
+
+  if (parentsShareResidence && birthResidenceHasCapacity && random(state) < 0.2) {
     const givenName = BABY_NAMES[Math.floor(random(state) * BABY_NAMES.length)];
     const baby = {
       id: `p${state.counters.person++}`,
