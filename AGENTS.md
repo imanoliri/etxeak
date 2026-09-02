@@ -78,6 +78,8 @@ Keep campaign-specific data outside generic simulation modules wherever practica
 
 For every simulation system, add deterministic tests for both normal and edge cases.
 
+The repository uses Node's built-in test runner through `npm test`. Netlify runs the test suite before publishing a Deploy Preview, so a simulation-test failure must block the preview.
+
 High-value scenario tests include:
 
 - child ages into partial/full work eligibility;
@@ -125,3 +127,5 @@ Prefer a shallow but complete playable household economy over disconnected futur
 - Update documentation in the same PR when architecture or visible behavior changes.
 - Do not merge unless explicitly requested.
 - Before requesting review, run available tests/build/lint and report failures accurately.
+- Keep `src/simulation.js` free of DOM and Leaflet dependencies.
+- Treat values in the current starting scenarios as provisional balance content unless they have been historically researched and documented.
