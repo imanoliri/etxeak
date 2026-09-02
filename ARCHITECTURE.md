@@ -335,7 +335,8 @@ The MVP-0 implementation is deliberately lightweight and framework-free:
 
 - `src/scenarios.js` — data-driven starting families, people, initial resources, and assets;
 - `src/simulation.js` — deterministic seasonal economy, demography, construction, occupations, and movement;
-- `src/commerce.js` — deterministic fixed-rate trade rules, partner production capability, geographic distance, and transport cost;
+- `src/commerce.js` — deterministic resource values, value-based trade quotes, partner production capability, geographic distance, transport cost, and distinct trade-year history;
+- `src/households.js` — eligible etxe founders, marriage-value calculation, static wife candidates, resource payment, and opening a completed etxe with a founding couple;
 - `src/map.js` — Leaflet-only rendering and map interaction;
 - `src/ui.js` — DOM rendering for setup, family, build, resources, and summaries;
 - `src/main.js` — application orchestration;
@@ -417,13 +418,40 @@ Commerce is intentionally shallow:
 
 - entering Commerce mode reveals the other scenario locations and fits the map to them;
 - a contact's saleable resources are derived from its configured productive assets;
-- the player gives 5 units of one resource to receive 1 unit of a resource that contact produces;
+- valued resources are food = 1, wood = 2, stone = 3;
+- receiving one unit costs 5× that resource's value;
+- the player pays with whole units of one selected valued resource, rounded upward when the target value cannot be matched exactly;
 - transport additionally costs 1 food per started 50 km from the player's nearest etxe;
+- successful trades record distinct calendar years per partner family;
 - the contact has no simulated inventory, labour, demography, preferences, or price response.
 
 The trade calculation lives in `src/commerce.js`, outside Leaflet/UI code. The map only displays partner locations and the UI only submits trade choices.
 
 This is an explicit MVP-0 exception to the otherwise single-family world: other families exist as fixed external economic endpoints, not autonomous household simulations.
+
+### Opening a completed etxe
+
+Construction and household establishment are separate state transitions.
+
+A completed new etxe is created with:
+
+- `opened: false`;
+- no head-person IDs;
+- zero residents;
+- normal physical capacity and coordinates.
+
+Ordinary movement into that residence is blocked until it is opened.
+
+To open it, `src/households.js` validates a founding man who is alive, working-age, unmarried, and not already an etxe head. The UI then reuses the external-family/commerce map zoom to select a static source family for a wife.
+
+The wife payment uses the same resource-value system as commerce:
+
+- base required value 10;
+- -1 for each distinct year with at least one successful trade with that family;
+- minimum required value 3;
+- payment rounds upward to whole units of the chosen resource.
+
+On success, the simulation deducts payment, moves the man into the residence, creates the incoming woman as a persistent person, links the spouses, records both head IDs on the residence, marks it opened, and renames it from the two heads' surnames. New opened head couples participate in the same per-residence birth logic as the original household.
 
 ### Controlled family and etxeak
 
@@ -452,7 +480,7 @@ The current engine implements this resolution in `src/simulation.js`. Each turn 
 7. movement between the family's etxeak resolves;
 8. season summary is shown.
 
-No relationship, diplomacy, external marriage, dynamic inter-family market, feud, or reputation phase exists in MVP-0. Fixed static commerce is handled as an immediate player action outside seasonal resolution.
+No relationship, diplomacy, dynamic marriage negotiation, dynamic inter-family market, feud, or reputation phase exists in MVP-0. Fixed static commerce and the constrained wife-sourcing action used to open new etxeak are immediate player actions outside seasonal resolution.
 
 ### Map implementation
 
@@ -488,7 +516,8 @@ The first playable version needs only:
 - **Build/develop controls** — create/expand fields, dwellings, and other enabled assets.
 - **Move people** — reassign eligible family members to another family etxe.
 - **Season summary** — outputs, consumption, population changes, project progress.
-- **Commerce mode** — reveal static external families, inspect distance/production, and execute fixed-rate trades.
+- **Commerce mode** — reveal static external families, inspect distance/production, and execute value-based trades.
+- **Open-etxe flow** — choose an eligible male founder, reuse the external-family zoom to choose a wife family, inspect discounted marriage value, pay, and establish the founding couple.
 
 ### MVP-0 success criterion
 
