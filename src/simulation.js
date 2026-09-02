@@ -3,7 +3,7 @@ import { OCCUPATIONS } from "./scenarios.js";
 export const SEASONS = ["Spring", "Summer", "Autumn", "Winter"];
 export const WORK_AGE = 12;
 export const ETXE_CAPACITY = 8;
-export const ETXE_WORK_RADIUS_KM = 5;
+export const ETXE_WORK_RADIUS_KM = 1;
 
 export const BUILD_TYPES = {
   etxe: {
@@ -19,7 +19,7 @@ export const BUILD_TYPES = {
     cost: { wood: 3 },
     workRequired: 3,
     placement: "near-etxe",
-    maxDistanceKm: 5,
+    maxDistanceKm: ETXE_WORK_RADIUS_KM,
     resultType: "field"
   }
 };
