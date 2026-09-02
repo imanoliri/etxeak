@@ -342,6 +342,12 @@ The MVP-0 implementation is deliberately lightweight and framework-free:
 
 The simulation module does not import Leaflet or browser DOM APIs. Campaign/scenario data remains separate from simulation logic.
 
+### Real-time season clock
+
+MVP-0 uses a small real-time clock in `src/main.js` to invoke seasonal turns automatically. The default delay is **7 seconds per season**, configurable by the player from **1–300 seconds**, with pause/resume and manual advancement.
+
+This timer is deliberately outside `src/simulation.js`. Wall-clock time is not part of deterministic game state: whether a season is advanced by the timer or by the manual button, the application calls the same `advanceSeason(state)` simulation transition. A manual advance temporarily suspends the timer while its season summary is open, then resumes it if autoplay was running.
+
 As the project grows, these modules can split further into `domain/`, `systems/`, `content/`, `state/`, and `ui/` without changing the core rule that rendering is independent from simulation.
 
 ## Save games and reproducibility
