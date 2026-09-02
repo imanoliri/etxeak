@@ -2,6 +2,7 @@ import { findNearestResidence, haversineKm } from "./simulation.js";
 
 export const TRADE_RATIO = 5;
 export const TRADE_DISTANCE_STEP_KM = 50;
+export const TRADE_BATCH_MAX = 8;
 export const RESOURCE_VALUES = Object.freeze({
   food: 1,
   wood: 2,
@@ -63,7 +64,13 @@ export function getTradeYearsWithFamily(state, partnerScenarioId) {
   return new Set(years).size;
 }
 
-export function getTradeQuote(state, partnerScenario, giveResource, receiveResource) {
+export function getTradeQuote(
+  state,
+  partnerScenario,
+  giveResource,
+  receiveResource,
+  batchCount = 1
+) {
   if (!state || !partnerScenario) {
     return { ok: false, message: "Trade partner unavailable." };
   }
@@ -94,8 +101,15 @@ export function getTradeQuote(state, partnerScenario, giveResource, receiveResou
     };
   }
 
-  const targetValue = TRADE_RATIO * receiveValue;
-  const giveAmount = Math.ceil(targetValue / giveValue);
+  const normalizedBatchCount = Number(batchCount);
+  if (!Number.isInteger(normalizedBatchCount) || normalizedBatchCount < 1) {
+    return { ok: false, message: "Choose a valid trade amount." };
+  }
+
+  const targetValuePerUnit = TRADE_RATIO * receiveValue;
+  const giveAmountPerUnit = Math.ceil(targetValuePerUnit / giveValue);
+  const targetValue = targetValuePerUnit * normalizedBatchCount;
+  const giveAmount = giveAmountPerUnit * normalizedBatchCount;
   const giveValuePaid = giveAmount * giveValue;
   const distanceKm = getTradeDistanceKm(state, partnerScenario);
   const transportFoodCost = getTransportFoodCost(distanceKm);
@@ -107,7 +121,9 @@ export function getTradeQuote(state, partnerScenario, giveResource, receiveResou
     giveAmount,
     giveValue,
     giveValuePaid,
-    receiveAmount: 1,
+    receiveAmount: normalizedBatchCount,
+    batchCount: normalizedBatchCount,
+    giveAmountPerUnit,
     receiveValue,
     distanceKm,
     transportFoodCost,
@@ -116,8 +132,20 @@ export function getTradeQuote(state, partnerScenario, giveResource, receiveResou
   };
 }
 
-export function tradeWithFamily(state, partnerScenario, giveResource, receiveResource) {
-  const quote = getTradeQuote(state, partnerScenario, giveResource, receiveResource);
+export function tradeWithFamily(
+  state,
+  partnerScenario,
+  giveResource,
+  receiveResource,
+  batchCount = 1
+) {
+  const quote = getTradeQuote(
+    state,
+    partnerScenario,
+    giveResource,
+    receiveResource,
+    batchCount
+  );
   if (!quote.ok) return quote;
 
   const giveAvailable = state.stores[giveResource] ?? 0;
@@ -159,7 +187,8 @@ export function tradeWithFamily(state, partnerScenario, giveResource, receiveRes
 
   state.stores[giveResource] -= quote.giveAmount;
   state.stores.food -= quote.transportFoodCost;
-  state.stores[receiveResource] = (state.stores[receiveResource] ?? 0) + 1;
+  state.stores[receiveResource] =
+    (state.stores[receiveResource] ?? 0) + quote.receiveAmount;
 
   recordTradeYear(state, partnerScenario.id);
 
@@ -173,7 +202,9 @@ export function tradeWithFamily(state, partnerScenario, giveResource, receiveRes
     " " +
     getResourceLabel(giveResource).toLowerCase() +
     overpayText +
-    " for 1 " +
+    " for " +
+    quote.receiveAmount +
+    " " +
     getResourceLabel(receiveResource).toLowerCase() +
     " with " +
     partnerScenario.familyName +
