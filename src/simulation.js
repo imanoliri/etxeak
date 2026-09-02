@@ -512,19 +512,23 @@ function resolveAnnualDemography(state, messages) {
     }
   }
 
-  const headMother = getLivingPeople(state).find(
-    (person) => person.role === "head" && person.sex === "F" && person.age >= 18 && person.age <= 42
-  );
-  const headFather = getLivingPeople(state).find(
-    (person) => person.role === "head" && person.sex === "M"
-  );
+  const livingNow = getLivingPeople(state);
 
-  const parentsShareResidence =
-    headMother && headFather && headMother.residenceId === headFather.residenceId;
-  const birthResidenceHasCapacity =
-    headMother && hasResidenceCapacity(state, headMother.residenceId);
+  for (const residence of state.residences.filter((entry) => entry.opened)) {
+    const heads = (residence.headPersonIds ?? [])
+      .map((personId) => livingNow.find((person) => person.id === personId))
+      .filter(Boolean);
 
-  if (parentsShareResidence && birthResidenceHasCapacity && random(state) < 0.2) {
+    const headMother = heads.find(
+      (person) => person.sex === "F" && person.age >= 18 && person.age <= 42
+    );
+    const headFather = heads.find((person) => person.sex === "M");
+
+    if (!headMother || !headFather) continue;
+    if (headMother.residenceId !== residence.id || headFather.residenceId !== residence.id) continue;
+    if (!hasResidenceCapacity(state, residence.id)) continue;
+    if (random(state) >= 0.2) continue;
+
     const givenName = BABY_NAMES[Math.floor(random(state) * BABY_NAMES.length)];
     const baby = {
       id: `p${state.counters.person++}`,
@@ -535,11 +539,11 @@ function resolveAnnualDemography(state, messages) {
       role: "child",
       occupation: "Unassigned",
       alive: true,
-      residenceId: headMother.residenceId,
+      residenceId: residence.id,
       parentIds: [headFather.id, headMother.id]
     };
     state.people.push(baby);
-    messages.push(`${givenName} was born into the family.`);
+    messages.push(`${givenName} was born in ${residence.name}.`);
   }
 }
 
