@@ -44,6 +44,7 @@ export const STARTING_SCENARIOS = [
       "A relatively balanced valley household with two fields, livestock and woodland access. The easiest starting economy.",
     center: [43.2641, -1.9748],
     seed: 110011,
+    marriageNames: ["Oneka", "Maria", "Toda", "Sancha"],
     stores: { food: 38, wood: 13, stone: 7, livestock: 5 },
     people: people([
       ["p1", "Eneko", "Irizar", "M", 36, "head", "Farmer"],
@@ -69,6 +70,7 @@ export const STARTING_SCENARIOS = [
       "A woodland-heavy household with strong building potential but only one established field.",
     center: [43.2992, -1.858],
     seed: 110022,
+    marriageNames: ["Toda", "Oneka", "Maria", "Sancha"],
     stores: { food: 34, wood: 20, stone: 6, livestock: 6 },
     people: people([
       ["p1", "Gartzea", "Oiarbide", "M", 39, "head", "Forestry"],
@@ -93,6 +95,7 @@ export const STARTING_SCENARIOS = [
       "An upland household rich in animals and woodland, but with less food security and limited arable land.",
     center: [43.1717, -1.864],
     seed: 110033,
+    marriageNames: ["Maria", "Toda", "Oneka", "Sancha"],
     stores: { food: 31, wood: 16, stone: 8, livestock: 8 },
     people: people([
       ["p1", "Lope", "Aldaz", "M", 41, "head", "Herder"],
@@ -118,6 +121,7 @@ export const STARTING_SCENARIOS = [
       "A smaller river-valley household with good fields and access to stone, but fewer working-age people.",
     center: [43.1348, -2.078],
     seed: 110044,
+    marriageNames: ["Sancha", "Maria", "Oneka", "Toda"],
     stores: { food: 36, wood: 10, stone: 13, livestock: 4 },
     people: people([
       ["p1", "Martin", "Zubia", "M", 34, "head", "Farmer"],
