@@ -24,11 +24,11 @@ Implemented on the current MVP-0 branch:
 - automatic occupation-to-asset labour allocation;
 - seasonal field cycle: spring sowing, summer tending, autumn harvest;
 - pasture, forestry, and mining production;
-- family food consumption and autumn animal slaughter;
+- family food consumption, food-shortage consequences, and autumn animal slaughter;
 - deterministic annual aging, simple births, and deaths;
 - resource HUD and seasonal summaries;
 - construction projects for new etxeak and fields;
-- Builder labour progressing projects over multiple seasons;
+- Builder labour progressing projects over multiple seasons, with automatic return to the worker's previous occupation when no projects remain;
 - moving people between completed etxeak;
 - value-based commerce with the unchosen family locations, including map zoom-out, production-limited exports, distance food costs, and trade-year relationship tracking;
 - opening completed etxeak through a founding marriage: choose an eligible man, select the wife's family on the external-family map, pay the marriage value, then establish the couple as the etxe heads;
@@ -39,7 +39,7 @@ Still designed but not yet implemented in MVP-0:
 - explicit per-person seasonal task assignment separate from occupation;
 - local per-etxe stores rather than the current pooled family stores;
 - additional building/asset types such as forges and workshops;
-- deeper starvation/health consequences;
+- deeper health, disease, and nutrition-state simulation beyond the current shortage-pressure model;
 - save/load persistence.
 
 ## Core loop
@@ -143,6 +143,7 @@ Etxe heads are tied to the etxe they head and cannot simply be moved to another 
 - The player can override assignments.
 - Occupation is distinct from the task performed this season.
 - Children below the configured work age are not full workers.
+- When a player changes a worker from a normal occupation to **Builder**, the previous non-Builder occupation is remembered. Once no active construction projects remain, that Builder automatically returns to the remembered occupation (or a sensible nearby non-construction fallback if none is known).
 
 Initial occupations may include:
 
@@ -179,6 +180,8 @@ At minimum, the simulation should support enough resource flow to make seasonal 
 - livestock;
 - construction materials;
 - outputs required by enabled productive assets.
+
+If seasonal food is insufficient, the missing amount is recorded as a **food-shortage season** for that calendar year. Each shortage season raises age-sensitive annual mortality risk and reduces the prototype annual birth chance by 5 percentage points from 20%; four shortage seasons reduce it to zero. The yearly shortage counter resets after winter demography resolves.
 
 ## Commerce
 
@@ -237,6 +240,7 @@ When a season resolves, its results are shown directly in the main game UI rathe
 - every resource type in the top bar has an emoji;
 - resource changes appear as signed deltas such as **+9** or **-4** beside the current total;
 - map locations use compact **color-coded pictograms** rather than emoji overlays; fields use a wheat pictogram and pastures use a sheep pictogram;
+- a field that could not be sown in spring because there was no available Farmer or no seed reserve receives a visible **red warning ring** until the next spring sowing attempt;
 - every location worked during the completed season receives a visible **👤** worker marker (with a count when multiple workers were applied);
 - the non-blocking season notification strip only shows **notable events and warnings**; routine production, consumption, sowing/tending/harvest, and construction-work progress are intentionally omitted because those outcomes are already represented by resource deltas and map activity markers.
 
