@@ -992,18 +992,6 @@ select {
   height: 30px;
 }
 
-.marker-emoji {
-  position: absolute;
-  z-index: 2;
-  top: -17px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 17px;
-  line-height: 1;
-  filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.95)) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
-  pointer-events: none;
-}
-
 .worker-marker {
   display: inline-flex;
   align-items: center;
@@ -1181,4 +1169,56 @@ select {
 
 .etxe-capacity-card small {
   opacity: 0.6;
+}
+
+
+/* --- Color-coded map pictograms --- */
+
+.game-marker[data-kind="home"] {
+  background: #79533a;
+  color: #fffaf0;
+  border-color: #fffaf0;
+}
+
+.game-marker[data-kind="field"] {
+  background: #c69a35;
+  color: #fffaf0;
+  border-color: #fffaf0;
+}
+
+.game-marker[data-kind="forest"] {
+  background: #3f6f4d;
+  color: #fffaf0;
+  border-color: #fffaf0;
+}
+
+.game-marker[data-kind="pasture"] {
+  background: #78935c;
+  color: #fffaf0;
+  border-color: #fffaf0;
+}
+
+.game-marker[data-kind="mine"] {
+  background: #59666f;
+  color: #fffaf0;
+  border-color: #fffaf0;
+}
+
+.game-marker[data-kind="project"] {
+  background: #aa6948;
+  color: #fffaf0;
+  border-color: #fffaf0;
+}
+
+.game-marker[data-kind="scenario"] {
+  background: #496b7c;
+  color: #fffaf0;
+  border-color: #fffaf0;
+}
+
+.game-marker[data-kind="field"] svg,
+.game-marker[data-kind="pasture"] svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.65;
 }
