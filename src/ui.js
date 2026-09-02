@@ -315,7 +315,7 @@ function personRow(state, person) {
 }
 
 
-export function openCommercePanel(state, partnerScenario, handlers) {
+export function openCommercePanel(state, partnerScenario, handlers, selection = {}) {
   const produced = getScenarioProducedResources(partnerScenario);
   const distanceKm = getTradeDistanceKm(state, partnerScenario);
   const transportFoodCost = getTransportFoodCost(distanceKm);
@@ -331,10 +331,13 @@ export function openCommercePanel(state, partnerScenario, handlers) {
     return;
   }
 
-  const defaultReceive = produced[0];
-  const defaultGive =
-    TRADEABLE_RESOURCES.find((resource) => resource !== defaultReceive) ??
-    TRADEABLE_RESOURCES[0];
+  const defaultReceive = produced.includes(selection.receiveResource)
+    ? selection.receiveResource
+    : produced[0];
+  const defaultGive = TRADEABLE_RESOURCES.includes(selection.giveResource)
+    ? selection.giveResource
+    : TRADEABLE_RESOURCES.find((resource) => resource !== defaultReceive) ??
+      TRADEABLE_RESOURCES[0];
 
   const giveOptions = TRADEABLE_RESOURCES.map(
     (resource) =>
@@ -342,7 +345,7 @@ export function openCommercePanel(state, partnerScenario, handlers) {
   ).join("");
   const receiveOptions = produced.map(
     (resource) =>
-      `<option value="${resource}">${getResourceLabel(resource)} · value ${getResourceValue(resource)}</option>`
+      `<option value="${resource}" ${resource === defaultReceive ? "selected" : ""}>${getResourceLabel(resource)} · value ${getResourceValue(resource)}</option>`
   ).join("");
 
   els.panelContent.innerHTML = `
