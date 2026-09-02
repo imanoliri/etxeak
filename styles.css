@@ -21,7 +21,8 @@ body {
 }
 
 button,
-select {
+select,
+input {
   font: inherit;
 }
 
@@ -64,8 +65,15 @@ button:disabled {
 }
 
 .title-block,
-.game-header button {
+.game-header button,
+.game-header input {
   pointer-events: auto;
+}
+
+.time-block {
+  display: grid;
+  justify-items: end;
+  gap: 5px;
 }
 
 .title-block {
@@ -106,6 +114,7 @@ h2 {
 }
 
 .chip,
+.season-clock,
 .resource-bar,
 .action-dock,
 .side-panel,
@@ -126,10 +135,60 @@ h2 {
   font-weight: 800;
 }
 
+.season-clock {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 12px;
+  padding: 5px;
+  color: #17261f;
+}
+
+.timer-toggle {
+  border: 0;
+  border-radius: 8px;
+  background: #17261f;
+  color: #f8f6ef;
+  padding: 6px 8px;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.timer-delay {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: none;
+  opacity: 0.75;
+}
+
+.timer-delay input {
+  width: 42px;
+  border: 1px solid rgba(23, 38, 31, 0.16);
+  border-radius: 7px;
+  background: white;
+  color: #17261f;
+  padding: 5px 4px;
+  font-size: 0.72rem;
+  font-weight: 750;
+  text-align: center;
+}
+
+.timer-countdown {
+  min-width: 34px;
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 850;
+  text-align: right;
+}
+
 .resource-bar {
   position: absolute;
   z-index: 950;
-  top: max(74px, calc(env(safe-area-inset-top) + 70px));
+  top: max(104px, calc(env(safe-area-inset-top) + 100px));
   left: 50%;
   display: flex;
   max-width: min(720px, calc(100vw - 24px));
@@ -497,7 +556,7 @@ select {
 .placement-banner {
   position: absolute;
   z-index: 1250;
-  top: max(126px, calc(env(safe-area-inset-top) + 120px));
+  top: max(156px, calc(env(safe-area-inset-top) + 150px));
   left: 50%;
   display: flex;
   transform: translateX(-50%);
@@ -612,8 +671,20 @@ select {
     right: 12px;
   }
 
+  .season-clock {
+    gap: 4px;
+  }
+
+  .timer-delay span:first-child {
+    display: none;
+  }
+
+  .timer-toggle {
+    padding-inline: 7px;
+  }
+
   .leaflet-control-zoom,
   .leaflet-control-layers {
-    margin-top: 92px !important;
+    margin-top: 110px !important;
   }
 }
