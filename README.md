@@ -104,7 +104,7 @@ Different campaigns can explore different transformations of the historical Basq
 
 Before the full Urumea campaign, Etxeak starts with a deliberately smaller playable prototype: **MVP-0: One House**.
 
-The map covers the chosen Urumea-region campaign area, but **only one family exists in the simulation at a time**. At the start of a game, the player chooses one of several predefined starting families. Each starting family has its own:
+The map covers the chosen Gipuzkoa / adjoining northern Navarre region around the Urumea campaign area, but **only one family exists in the simulation at a time**. The first implementation is a full-screen interactive topographic map, approximately bounded by **42.88–43.48° N and 2.42–1.65° W**. At the start of a game, the player chooses one of several predefined starting families. Each starting family has its own:
 
 - name and household members;
 - starting location;
