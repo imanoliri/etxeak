@@ -159,3 +159,8 @@ The fuller **Urumea MVP** comes later and adds other households, kinship between
 Later systems can include social obligations, tithes and rents, reputation and status, churches and monasteries, towns, mills, ironworking, trade, powerful lineages, political change, new crops, education, migration, overseas networks, and other historical transformations.
 
 Later campaigns can move to other Basque regions and periods while keeping the etxe, kinship, land, and generational legacy at the centre of play.
+
+
+## Deployment
+
+The repository is configured as a static Netlify site. Pull requests should receive a Netlify Deploy Preview when the GitHub repository is connected to the Netlify project and Deploy Previews are enabled.
