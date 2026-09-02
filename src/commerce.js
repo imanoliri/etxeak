@@ -5,20 +5,22 @@ export const TRADE_DISTANCE_STEP_KM = 50;
 export const RESOURCE_VALUES = Object.freeze({
   food: 1,
   wood: 2,
-  stone: 3
+  stone: 3,
+  livestock: 3
 });
 export const TRADEABLE_RESOURCES = Object.keys(RESOURCE_VALUES);
 
 const RESOURCE_LABELS = {
   food: "Food",
   wood: "Wood",
-  stone: "Stone"
+  stone: "Stone",
+  livestock: "Livestock"
 };
 
 const PRODUCED_BY_ASSET = {
   field: ["food"],
   forest: ["wood"],
-  pasture: ["food"],
+  pasture: ["food", "livestock"],
   mine: ["stone"]
 };
 
