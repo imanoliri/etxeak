@@ -168,11 +168,11 @@ export function renderGameState(mapContext, state, handlers = {}) {
     window.L.circle(residence.coords, {
       radius: ETXE_WORK_RADIUS_KM * 1000,
       color: "#315642",
-      weight: 1,
-      opacity: 0.24,
+      weight: 1.5,
+      opacity: 0.4,
       fillColor: "#315642",
-      fillOpacity: 0.025,
-      dashArray: "4 7",
+      fillOpacity: 0.045,
+      dashArray: "5 6",
       interactive: false
     }).addTo(mapContext.gameLayer);
 
