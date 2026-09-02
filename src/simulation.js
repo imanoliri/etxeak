@@ -3,7 +3,7 @@ import { OCCUPATIONS } from "./scenarios.js";
 export const SEASONS = ["Spring", "Summer", "Autumn", "Winter"];
 export const WORK_AGE = 12;
 export const ETXE_CAPACITY = 8;
-export const ETXE_WORK_RADIUS_KM = 1;
+export const ETXE_WORK_RADIUS_KM = 1.5;
 
 export const BUILD_TYPES = {
   etxe: {
