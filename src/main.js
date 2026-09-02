@@ -33,14 +33,15 @@ import {
 const DEFAULT_SEASON_SECONDS = 7;
 const MIN_SEASON_SECONDS = 1;
 const MAX_SEASON_SECONDS = 300;
+const TIMER_TICK_MS = 100;
 
 let state = null;
 let placementType = null;
-let seasonSeconds = DEFAULT_SEASON_SECONDS;
+let autoplaySeconds = DEFAULT_SEASON_SECONDS;
 let autoplayPaused = false;
-let seasonAdvanceTimer = null;
-let countdownTimer = null;
-let seasonDeadline = null;
+let remainingMs = autoplaySeconds * 1000;
+let deadlineMs = null;
+let timerId = null;
 let resumeAfterSummary = false;
 
 const mapContext = createMap(handleMapClick);
@@ -51,13 +52,14 @@ bindStaticActions({
   onSlaughter: handleSlaughter,
   onNextSeason: handleNextSeason,
   onToggleAutoplay: toggleAutoplay,
-  onTimerSeconds: setSeasonSeconds,
+  onTimerSeconds: setAutoplaySeconds,
   onCloseSummary: handleSummaryClosed,
   onCancelPlacement: cancelPlacement
 });
 
 renderScenarioSelection(STARTING_SCENARIOS, startScenario);
 showScenarioPreviews(mapContext, STARTING_SCENARIOS, startScenario);
+renderTimer();
 
 function startScenario(scenarioId) {
   const scenario = STARTING_SCENARIOS.find((entry) => entry.id === scenarioId);
@@ -68,9 +70,7 @@ function startScenario(scenarioId) {
   startGameUI(state);
   focusOn(mapContext, scenario.center, 13);
   refreshMap();
-  autoplayPaused = false;
-  resumeAfterSummary = false;
-  scheduleNextSeason();
+  resetAutoplayCountdown();
   showToast(`${scenario.familyName} begins in Spring 1100.`);
 }
 
@@ -141,105 +141,136 @@ function handleNextSeason() {
   if (!state) return;
 
   const wasRunning = !autoplayPaused;
-  clearSeasonTimer();
-  resumeAfterSummary = wasRunning;
-
-  const summary = advanceSeason(state);
-  refresh();
-  showSummary(summary);
-}
-
-function handleAutoSeason() {
-  if (!state || autoplayPaused) return;
-
-  const summary = advanceSeason(state);
-  refresh();
-
-  const firstMessage = summary.messages[0] ?? "Nothing notable happened.";
-  showToast(`${summary.season} ${summary.year}: ${firstMessage}`);
-  scheduleNextSeason();
-}
-
-function toggleAutoplay() {
-  autoplayPaused = !autoplayPaused;
-  resumeAfterSummary = false;
-
-  if (autoplayPaused) {
-    clearSeasonTimer();
-    renderSeasonTimer({
-      paused: true,
-      seconds: seasonSeconds,
-      remainingSeconds: seasonSeconds
-    });
+  if (wasRunning) {
+    pauseAutoplay();
+    resumeAfterSummary = true;
   } else {
-    scheduleNextSeason();
-  }
-}
-
-function setSeasonSeconds(value) {
-  const parsed = Number.parseInt(value, 10);
-  seasonSeconds = Number.isFinite(parsed)
-    ? Math.min(MAX_SEASON_SECONDS, Math.max(MIN_SEASON_SECONDS, parsed))
-    : DEFAULT_SEASON_SECONDS;
-
-  if (autoplayPaused || !state) {
-    renderSeasonTimer({
-      paused: autoplayPaused,
-      seconds: seasonSeconds,
-      remainingSeconds: seasonSeconds
-    });
-    return;
+    resumeAfterSummary = false;
   }
 
-  scheduleNextSeason();
+  const summary = resolveSeason();
+  showSummary(summary);
 }
 
 function handleSummaryClosed() {
   if (!resumeAfterSummary) return;
   resumeAfterSummary = false;
-  scheduleNextSeason();
+  autoplayPaused = false;
+  resetAutoplayCountdown();
 }
 
-function scheduleNextSeason() {
-  clearSeasonTimer();
+function resolveSeason() {
+  const summary = advanceSeason(state);
+  refresh();
+  return summary;
+}
 
-  if (!state || autoplayPaused) {
-    renderSeasonTimer({
-      paused: autoplayPaused,
-      seconds: seasonSeconds,
-      remainingSeconds: seasonSeconds
-    });
+function resolveSeasonAutomatically() {
+  if (!state || autoplayPaused) return;
+
+  const summary = resolveSeason();
+  const firstMessage = summary.messages[0] ?? "Nothing notable happened.";
+  showToast(`${summary.season} ${summary.year}: ${firstMessage}`);
+  resetAutoplayCountdown();
+}
+
+function toggleAutoplay() {
+  if (!state) return;
+
+  if (autoplayPaused) {
+    autoplayPaused = false;
+    resumeAfterSummary = false;
+    startAutoplayTimer(false);
+  } else {
+    pauseAutoplay();
+    resumeAfterSummary = false;
+  }
+}
+
+function setAutoplaySeconds(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    renderTimer();
     return;
   }
 
-  seasonDeadline = Date.now() + seasonSeconds * 1000;
-  renderCountdown();
-  countdownTimer = window.setInterval(renderCountdown, 100);
-  seasonAdvanceTimer = window.setTimeout(handleAutoSeason, seasonSeconds * 1000);
+  autoplaySeconds = Math.min(
+    MAX_SEASON_SECONDS,
+    Math.max(MIN_SEASON_SECONDS, Math.round(parsed))
+  );
+  remainingMs = autoplaySeconds * 1000;
+
+  if (autoplayPaused || !state) {
+    clearTimer();
+    deadlineMs = null;
+    renderTimer();
+  } else {
+    startAutoplayTimer(true);
+  }
 }
 
-function renderCountdown() {
-  const remainingSeconds = seasonDeadline
-    ? Math.max(0, (seasonDeadline - Date.now()) / 1000)
-    : seasonSeconds;
+function resetAutoplayCountdown() {
+  remainingMs = autoplaySeconds * 1000;
 
+  if (!state || autoplayPaused) {
+    clearTimer();
+    deadlineMs = null;
+    renderTimer();
+    return;
+  }
+
+  startAutoplayTimer(true);
+}
+
+function startAutoplayTimer(resetCountdown) {
+  clearTimer();
+
+  if (!state || autoplayPaused) {
+    renderTimer();
+    return;
+  }
+
+  if (resetCountdown || remainingMs <= 0 || remainingMs > autoplaySeconds * 1000) {
+    remainingMs = autoplaySeconds * 1000;
+  }
+
+  deadlineMs = Date.now() + remainingMs;
+  renderTimer();
+
+  timerId = window.setInterval(() => {
+    if (!state || autoplayPaused || deadlineMs === null) return;
+
+    remainingMs = Math.max(0, deadlineMs - Date.now());
+    renderTimer();
+
+    if (remainingMs <= 0) {
+      resolveSeasonAutomatically();
+    }
+  }, TIMER_TICK_MS);
+}
+
+function pauseAutoplay() {
+  if (deadlineMs !== null) {
+    remainingMs = Math.max(0, deadlineMs - Date.now());
+  }
+
+  autoplayPaused = true;
+  clearTimer();
+  deadlineMs = null;
+  renderTimer();
+}
+
+function clearTimer() {
+  if (timerId !== null) {
+    window.clearInterval(timerId);
+    timerId = null;
+  }
+}
+
+function renderTimer() {
   renderSeasonTimer({
     paused: autoplayPaused,
-    seconds: seasonSeconds,
-    remainingSeconds
+    seconds: autoplaySeconds,
+    remainingSeconds: remainingMs / 1000
   });
-}
-
-function clearSeasonTimer() {
-  if (seasonAdvanceTimer !== null) {
-    window.clearTimeout(seasonAdvanceTimer);
-    seasonAdvanceTimer = null;
-  }
-
-  if (countdownTimer !== null) {
-    window.clearInterval(countdownTimer);
-    countdownTimer = null;
-  }
-
-  seasonDeadline = null;
 }
