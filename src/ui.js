@@ -10,6 +10,7 @@ import {
 import { OCCUPATIONS } from "./scenarios.js";
 import {
   TRADEABLE_RESOURCES,
+  TRADE_BATCH_MAX,
   TRADE_RATIO,
   getResourceLabel,
   getResourceValue,
@@ -338,6 +339,14 @@ export function openCommercePanel(state, partnerScenario, handlers, selection = 
     ? selection.giveResource
     : TRADEABLE_RESOURCES.find((resource) => resource !== defaultReceive) ??
       TRADEABLE_RESOURCES[0];
+  const requestedAmount = Number(selection.amount);
+  const defaultAmount = Number.isInteger(requestedAmount)
+    ? Math.min(TRADE_BATCH_MAX, Math.max(1, requestedAmount))
+    : 1;
+  const amountButtons = Array.from({ length: TRADE_BATCH_MAX }, (_, index) => {
+    const amount = index + 1;
+    return `<button class="trade-amount-cell" data-trade-amount="${amount}" type="button" aria-label="Trade amount ${amount}">${amount}</button>`;
+  }).join("");
 
   const giveOptions = TRADEABLE_RESOURCES.map(
     (resource) =>
@@ -364,6 +373,13 @@ export function openCommercePanel(state, partnerScenario, handlers, selection = 
         <label>Give<select id="trade-give">${giveOptions}</select></label>
         <label>Receive<select id="trade-receive">${receiveOptions}</select></label>
       </div>
+      <div class="trade-amount-block">
+        <div class="trade-amount-heading">
+          <span>Amount</span>
+          <strong id="trade-amount-label">${defaultAmount}</strong>
+        </div>
+        <div class="trade-amount-grid" role="group" aria-label="Trade amount">${amountButtons}</div>
+      </div>
       <div id="trade-quote" class="trade-quote"></div>
       <button id="trade-confirm" class="primary wide" type="button">Trade</button>
     </section>
@@ -373,13 +389,28 @@ export function openCommercePanel(state, partnerScenario, handlers, selection = 
   const receiveSelect = els.panelContent.querySelector("#trade-receive");
   const quote = els.panelContent.querySelector("#trade-quote");
   const confirm = els.panelContent.querySelector("#trade-confirm");
+  const amountLabel = els.panelContent.querySelector("#trade-amount-label");
+  const amountCells = [...els.panelContent.querySelectorAll("[data-trade-amount]")];
+  let currentAmount = defaultAmount;
+
+  const paintAmountCells = () => {
+    amountLabel.textContent = String(currentAmount);
+    amountCells.forEach((cell) => {
+      const amount = Number(cell.dataset.tradeAmount);
+      cell.dataset.resource = giveSelect.value;
+      cell.classList.toggle("is-filled", amount <= currentAmount);
+      cell.classList.toggle("is-selected", amount === currentAmount);
+      cell.setAttribute("aria-pressed", amount === currentAmount ? "true" : "false");
+    });
+  };
 
   const updateQuote = () => {
     const current = getTradeQuote(
       state,
       partnerScenario,
       giveSelect.value,
-      receiveSelect.value
+      receiveSelect.value,
+      currentAmount
     );
 
     if (!current.ok) {
@@ -397,27 +428,39 @@ export function openCommercePanel(state, partnerScenario, handlers, selection = 
       (giveSelect.value === "food" ? current.giveAmount : 0);
 
     quote.textContent =
-      `Give ${current.giveAmount} ${getResourceLabel(giveSelect.value).toLowerCase()} (target value ${current.targetValue}${overpay}) + ${current.transportFoodCost} food transport → 1 ${getResourceLabel(receiveSelect.value).toLowerCase()}.` +
+      `Give ${current.giveAmount} ${getResourceLabel(giveSelect.value).toLowerCase()} (target value ${current.targetValue}${overpay}) + ${current.transportFoodCost} food transport → ${current.receiveAmount} ${getResourceLabel(receiveSelect.value).toLowerCase()}.` +
       (giveSelect.value === "food" ? ` Total food cost: ${totalFood}.` : "");
     confirm.disabled = false;
+    confirm.textContent = `Trade ${current.receiveAmount}`;
   };
 
   giveSelect.addEventListener("change", () => {
-    handlers.onSelectionChange?.(giveSelect.value, receiveSelect.value);
+    paintAmountCells();
+    handlers.onSelectionChange?.(giveSelect.value, receiveSelect.value, currentAmount);
     updateQuote();
   });
   receiveSelect.addEventListener("change", () => {
-    handlers.onSelectionChange?.(giveSelect.value, receiveSelect.value);
+    handlers.onSelectionChange?.(giveSelect.value, receiveSelect.value, currentAmount);
     updateQuote();
+  });
+  amountCells.forEach((cell) => {
+    cell.addEventListener("click", () => {
+      currentAmount = Number(cell.dataset.tradeAmount);
+      paintAmountCells();
+      handlers.onSelectionChange?.(giveSelect.value, receiveSelect.value, currentAmount);
+      updateQuote();
+    });
   });
   confirm.addEventListener("click", () =>
     handlers.onTrade(
       partnerScenario.id,
       giveSelect.value,
-      receiveSelect.value
+      receiveSelect.value,
+      currentAmount
     )
   );
-  handlers.onSelectionChange?.(giveSelect.value, receiveSelect.value);
+  paintAmountCells();
+  handlers.onSelectionChange?.(giveSelect.value, receiveSelect.value, currentAmount);
   updateQuote();
   els.sidePanel.classList.remove("is-hidden");
 }
