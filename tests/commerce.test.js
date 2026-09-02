@@ -29,7 +29,7 @@ test("trade partners only sell valued resources their assets produce", () => {
   assert.ok(produced.includes("livestock"));
 });
 
-test("5:1 commerce applies to value and rounds payment upward", () => {
+test("commerce exchanges equal value and rounds payment upward", () => {
   const state = createGame(STARTING_SCENARIOS[0]);
   const partner = STARTING_SCENARIOS[1];
   state.stores.stone = 20;
@@ -37,10 +37,10 @@ test("5:1 commerce applies to value and rounds payment upward", () => {
 
   const quote = getTradeQuote(state, partner, "stone", "wood");
   assert.equal(quote.ok, true);
-  assert.equal(quote.targetValue, 10);
-  assert.equal(quote.giveAmount, 4);
-  assert.equal(quote.giveValuePaid, 12);
-  assert.equal(quote.overpayValue, 2);
+  assert.equal(quote.targetValue, 2);
+  assert.equal(quote.giveAmount, 1);
+  assert.equal(quote.giveValuePaid, 3);
+  assert.equal(quote.overpayValue, 1);
 
   const beforeStone = state.stores.stone;
   const beforeWood = state.stores.wood;
@@ -48,7 +48,7 @@ test("5:1 commerce applies to value and rounds payment upward", () => {
   const result = tradeWithFamily(state, partner, "stone", "wood");
 
   assert.equal(result.ok, true);
-  assert.equal(state.stores.stone, beforeStone - 4);
+  assert.equal(state.stores.stone, beforeStone - 1);
   assert.equal(state.stores.wood, beforeWood + 1);
   assert.equal(
     state.stores.food,
@@ -86,7 +86,7 @@ test("food offered in trade also pays the distance surcharge", () => {
   const result = tradeWithFamily(state, partner, "food", "wood");
 
   assert.equal(result.ok, true);
-  assert.equal(state.stores.food, 30 - 10 - surcharge);
+  assert.equal(state.stores.food, 30 - 2 - surcharge);
 });
 
 test("trade relationship counts distinct years, not number of trades", () => {
@@ -122,12 +122,12 @@ test("livestock has commerce value 3 and can be traded from pasture-producing fa
   const quote = getTradeQuote(state, partner, "food", "livestock");
   assert.equal(quote.ok, true);
   assert.equal(quote.receiveValue, 3);
-  assert.equal(quote.targetValue, 15);
-  assert.equal(quote.giveAmount, 15);
+  assert.equal(quote.targetValue, 3);
+  assert.equal(quote.giveAmount, 3);
 });
 
 
-test("commerce quantity batches scale the exchange while charging transport once", () => {
+test("commerce rounds once across the whole requested amount and charges transport once", () => {
   const state = createGame(STARTING_SCENARIOS[0]);
   const partner = STARTING_SCENARIOS[1];
   state.stores.stone = 100;
@@ -136,15 +136,36 @@ test("commerce quantity batches scale the exchange while charging transport once
   const quote = getTradeQuote(state, partner, "stone", "wood", 6);
   assert.equal(quote.ok, true);
   assert.equal(quote.receiveAmount, 6);
-  assert.equal(quote.giveAmountPerUnit, 4);
-  assert.equal(quote.giveAmount, 24);
-  assert.equal(quote.targetValue, 60);
-  assert.equal(quote.giveValuePaid, 72);
+  assert.equal(quote.targetValue, 12);
+  assert.equal(quote.giveAmount, 4);
+  assert.equal(quote.giveValuePaid, 12);
+  assert.equal(quote.overpayValue, 0);
 
   const transport = getTransportFoodCost(getTradeDistanceKm(state, partner));
   const result = tradeWithFamily(state, partner, "stone", "wood", 6);
   assert.equal(result.ok, true);
-  assert.equal(state.stores.stone, 76);
+  assert.equal(state.stores.stone, 96);
   assert.equal(state.stores.wood, STARTING_SCENARIOS[0].stores.wood + 6);
+  assert.equal(state.stores.food, 100 - transport);
+});
+
+test("eight wood paid with stone costs six stone plus separate transport food", () => {
+  const state = createGame(STARTING_SCENARIOS[0]);
+  const partner = STARTING_SCENARIOS[1];
+  state.stores.stone = 100;
+  state.stores.food = 100;
+
+  const quote = getTradeQuote(state, partner, "stone", "wood", 8);
+  assert.equal(quote.ok, true);
+  assert.equal(quote.targetValue, 16);
+  assert.equal(quote.giveAmount, 6);
+  assert.equal(quote.giveValuePaid, 18);
+  assert.equal(quote.overpayValue, 2);
+
+  const transport = getTransportFoodCost(getTradeDistanceKm(state, partner));
+  const result = tradeWithFamily(state, partner, "stone", "wood", 8);
+  assert.equal(result.ok, true);
+  assert.equal(state.stores.stone, 94);
+  assert.equal(state.stores.wood, STARTING_SCENARIOS[0].stores.wood + 8);
   assert.equal(state.stores.food, 100 - transport);
 });
