@@ -7,8 +7,8 @@ export const OCCUPATIONS = [
   "Unassigned"
 ];
 
-const people = (entries) =>
-  entries.map(([id, givenName, surname, sex, age, role, occupation]) => ({
+const people = (entries) => {
+  const records = entries.map(([id, givenName, surname, sex, age, role, occupation]) => ({
     id,
     givenName,
     surname,
@@ -19,6 +19,21 @@ const people = (entries) =>
     alive: true,
     residenceId: "etxe-1"
   }));
+
+  const heads = records.filter((person) => person.role === "head");
+  if (heads.length === 2) {
+    heads[0].spouseId = heads[1].id;
+    heads[1].spouseId = heads[0].id;
+
+    records
+      .filter((person) => person.role === "child")
+      .forEach((child) => {
+        child.parentIds = heads.map((head) => head.id);
+      });
+  }
+
+  return records;
+};
 
 export const STARTING_SCENARIOS = [
   {
