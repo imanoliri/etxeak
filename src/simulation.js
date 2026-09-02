@@ -200,9 +200,11 @@ export function advanceSeason(state) {
   const completedSeason = getCurrentSeason(state);
   const completedYear = state.date.year;
   const messages = [];
+  const activities = [];
+  const before = captureHudResources(state);
 
-  resolveProduction(state, messages);
-  resolveProjects(state, messages);
+  resolveProduction(state, messages, activities);
+  resolveProjects(state, messages, activities);
   resolveConsumption(state, messages);
 
   if (completedSeason === "Winter") {
@@ -213,10 +215,17 @@ export function advanceSeason(state) {
     state.date.seasonIndex += 1;
   }
 
+  const after = captureHudResources(state);
+  const resourceDeltas = Object.fromEntries(
+    Object.keys(after).map((key) => [key, after[key] - before[key]])
+  );
+
   const summary = {
     season: completedSeason,
     year: completedYear,
-    messages
+    messages,
+    resourceDeltas,
+    activities
   };
 
   state.history.push(
@@ -226,21 +235,36 @@ export function advanceSeason(state) {
   return summary;
 }
 
-function resolveProduction(state, messages) {
+function captureHudResources(state) {
+  return {
+    food: state.stores.food,
+    wood: state.stores.wood,
+    stone: state.stores.stone,
+    livestock: state.stores.livestock,
+    people: getPopulation(state),
+    etxeak: state.residences.length
+  };
+}
+
+function resolveProduction(state, messages, activities) {
   const season = getCurrentSeason(state);
   const pools = createWorkerPools(state);
 
   for (const asset of state.assets) {
     if (asset.type === "field") {
-      resolveField(state, asset, season, pools, messages);
+      resolveField(state, asset, season, pools, messages, activities);
     } else if (asset.type === "forest") {
-      if (takeWorker(pools, asset.residenceId, "Forestry")) {
+      const worker = takeWorker(pools, asset.residenceId, "Forestry");
+      if (worker) {
+        recordActivity(activities, asset, worker);
         const amount = season === "Winter" ? 3 : 2;
         state.stores.wood += amount;
         messages.push(`${asset.name}: +${amount} wood.`);
       }
     } else if (asset.type === "pasture") {
-      if (takeWorker(pools, asset.residenceId, "Herder")) {
+      const worker = takeWorker(pools, asset.residenceId, "Herder");
+      if (worker) {
+        recordActivity(activities, asset, worker);
         if (season === "Spring") {
           state.stores.livestock += 1;
           messages.push(`${asset.name}: livestock increased by 1.`);
@@ -250,7 +274,9 @@ function resolveProduction(state, messages) {
         }
       }
     } else if (asset.type === "mine") {
-      if (takeWorker(pools, asset.residenceId, "Miner")) {
+      const worker = takeWorker(pools, asset.residenceId, "Miner");
+      if (worker) {
+        recordActivity(activities, asset, worker);
         state.stores.stone += 2;
         messages.push(`${asset.name}: +2 stone.`);
       }
@@ -258,8 +284,10 @@ function resolveProduction(state, messages) {
   }
 }
 
-function resolveField(state, asset, season, pools, messages) {
-  const worked = takeWorker(pools, asset.residenceId, "Farmer");
+function resolveField(state, asset, season, pools, messages, activities) {
+  const worker = takeWorker(pools, asset.residenceId, "Farmer");
+  const worked = Boolean(worker);
+  if (worker) recordActivity(activities, asset, worker);
 
   if (season === "Spring") {
     asset.state.sown = false;
@@ -306,7 +334,8 @@ function createWorkerPools(state) {
     if (!canWork(person) || person.occupation === "Unassigned") continue;
 
     const key = `${person.residenceId}::${person.occupation}`;
-    pools.set(key, (pools.get(key) ?? 0) + 1);
+    if (!pools.has(key)) pools.set(key, []);
+    pools.get(key).push(person);
   }
 
   return pools;
@@ -314,26 +343,47 @@ function createWorkerPools(state) {
 
 function takeWorker(pools, residenceId, occupation) {
   const key = `${residenceId}::${occupation}`;
-  const available = pools.get(key) ?? 0;
-  if (available <= 0) return false;
-  pools.set(key, available - 1);
-  return true;
+  const available = pools.get(key) ?? [];
+  return available.shift() ?? null;
 }
 
-function resolveProjects(state, messages) {
-  let builderWork = getLivingPeople(state).filter(
-    (person) => canWork(person) && person.occupation === "Builder"
-  ).length;
+function recordActivity(activities, target, worker) {
+  activities.push({
+    targetType: "asset",
+    targetId: target.id,
+    label: target.name,
+    coords: [...target.coords],
+    workers: 1,
+    workerIds: [worker.id]
+  });
+}
 
-  if (builderWork <= 0 || state.projects.length === 0) return;
+function resolveProjects(state, messages, activities) {
+  const builders = getLivingPeople(state).filter(
+    (person) => canWork(person) && person.occupation === "Builder"
+  );
+  let builderIndex = 0;
+
+  if (builders.length <= 0 || state.projects.length === 0) return;
 
   for (const project of [...state.projects]) {
-    if (builderWork <= 0) break;
+    const availableBuilders = builders.length - builderIndex;
+    if (availableBuilders <= 0) break;
 
     const remaining = project.workRequired - project.progress;
-    const applied = Math.min(builderWork, remaining);
+    const applied = Math.min(availableBuilders, remaining);
+    const appliedBuilders = builders.slice(builderIndex, builderIndex + applied);
+    builderIndex += applied;
     project.progress += applied;
-    builderWork -= applied;
+
+    activities.push({
+      targetType: "project",
+      targetId: project.id,
+      label: project.name,
+      coords: [...project.coords],
+      workers: applied,
+      workerIds: appliedBuilders.map((person) => person.id)
+    });
     messages.push(`${project.name}: +${applied} construction work.`);
 
     if (project.progress >= project.workRequired) {
