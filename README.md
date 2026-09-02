@@ -122,6 +122,8 @@ The current MVP-0 branch already supports:
 
 - choosing one of four provisional starting families;
 - viewing the chosen family's etxe and productive assets on the real map;
+- viewing the family's genealogy and parent/child relationships;
+- automatically assigning an occupation when children reach working age, with player overrides;
 - changing working-age family members' occupations;
 - advancing through Spring, Summer, Autumn, and Winter;
 - sowing, tending, harvesting, herding, forestry, mining, seasonal consumption, and autumn slaughter;
