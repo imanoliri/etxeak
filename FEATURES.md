@@ -188,7 +188,7 @@ When a season resolves, its results are shown directly in the main game UI rathe
 
 - every resource type in the top bar has an emoji;
 - resource changes appear as signed deltas such as **+9** or **-4** beside the current total;
-- buildings and productive locations have type-specific emoji above their map markers;
+- map locations use compact **color-coded pictograms** rather than emoji overlays; fields use a wheat pictogram and pastures use a sheep pictogram;
 - every location worked during the completed season receives a visible **👤** worker marker (with a count when multiple workers were applied);
 - all season-resolution messages remain available in a compact, non-blocking results strip on the map.
 
