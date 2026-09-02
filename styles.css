@@ -1293,3 +1293,11 @@ select {
     grid-template-columns: 1fr;
   }
 }
+
+
+.game-marker.unopened {
+  border-style: dashed;
+  background: #d7d0be;
+  color: #17261f;
+  border-color: #17261f;
+}
