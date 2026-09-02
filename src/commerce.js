@@ -1,6 +1,5 @@
 import { findNearestResidence, haversineKm } from "./simulation.js";
 
-export const TRADE_RATIO = 5;
 export const TRADE_DISTANCE_STEP_KM = 50;
 export const TRADE_BATCH_MAX = 8;
 export const RESOURCE_VALUES = Object.freeze({
@@ -106,10 +105,8 @@ export function getTradeQuote(
     return { ok: false, message: "Choose a valid trade amount." };
   }
 
-  const targetValuePerUnit = TRADE_RATIO * receiveValue;
-  const giveAmountPerUnit = Math.ceil(targetValuePerUnit / giveValue);
-  const targetValue = targetValuePerUnit * normalizedBatchCount;
-  const giveAmount = giveAmountPerUnit * normalizedBatchCount;
+  const targetValue = receiveValue * normalizedBatchCount;
+  const giveAmount = Math.ceil(targetValue / giveValue);
   const giveValuePaid = giveAmount * giveValue;
   const distanceKm = getTradeDistanceKm(state, partnerScenario);
   const transportFoodCost = getTransportFoodCost(distanceKm);
@@ -123,7 +120,6 @@ export function getTradeQuote(
     giveValuePaid,
     receiveAmount: normalizedBatchCount,
     batchCount: normalizedBatchCount,
-    giveAmountPerUnit,
     receiveValue,
     distanceKm,
     transportFoodCost,
