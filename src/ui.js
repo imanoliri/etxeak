@@ -359,7 +359,7 @@ export function openCommercePanel(state, partnerScenario, handlers, selection = 
     </section>
     <section class="panel-section">
       <h3>Trade</h3>
-      <p class="muted">Resource values: food 1 · wood 2 · stone 3. Commerce costs ${TRADE_RATIO}× the value received, plus ${transportFoodCost} food for transport (1 per started 50 km). If the chosen payment resource cannot match the value exactly, you pay the next whole unit.</p>
+      <p class="muted">Resource values: food 1 · wood 2 · stone 3 · livestock 3. Commerce costs ${TRADE_RATIO}× the value received, plus ${transportFoodCost} food for transport (1 per started 50 km). If the chosen payment resource cannot match the value exactly, you pay the next whole unit.</p>
       <div class="trade-controls">
         <label>Give<select id="trade-give">${giveOptions}</select></label>
         <label>Receive<select id="trade-receive">${receiveOptions}</select></label>
@@ -589,7 +589,7 @@ export function openMarriagePanel(
     <section class="panel-section">
       <h3>Marriage payment</h3>
       <p class="muted">Base value 10, reduced by 1 for each distinct year you have traded with this family. You have traded in ${tradeYears} year${tradeYears === 1 ? "" : "s"}, so the required value is ${requiredValue}. Minimum value is 3.</p>
-      <p class="muted">Food = 1 · wood = 2 · stone = 3. If the chosen resource cannot match the required value exactly, the next whole unit is charged.</p>
+      <p class="muted">Food = 1 · wood = 2 · stone = 3 · livestock = 3. If the chosen resource cannot match the required value exactly, the next whole unit is charged.</p>
       <label>Pay with<select id="marriage-payment">${paymentOptions}</select></label>
       <div id="marriage-quote" class="trade-quote"></div>
       <button id="marriage-confirm" class="primary wide" type="button">Open etxe and marry</button>
