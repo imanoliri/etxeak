@@ -9,6 +9,7 @@ const els = {
   timerSeconds: document.querySelector("#timer-seconds"),
   timerCountdown: document.querySelector("#timer-countdown"),
   resourceBar: document.querySelector("#resource-bar"),
+  seasonFeedback: document.querySelector("#season-feedback"),
   actionDock: document.querySelector("#action-dock"),
   familyButton: document.querySelector("#family-button"),
   buildButton: document.querySelector("#build-button"),
@@ -86,31 +87,56 @@ export function renderSeasonTimer({ paused, seconds, remainingSeconds }) {
   els.timerCountdown.textContent = paused ? "paused" : `${Math.max(0, remainingSeconds).toFixed(1)}s`;
 }
 
-export function renderHud(state) {
+export function renderHud(state, seasonSummary = null) {
   els.title.textContent = state.familyName;
   els.dateChip.textContent = `${getCurrentSeason(state)} · ${state.date.year}`;
 
   const resources = [
-    ["Food", state.stores.food],
-    ["Wood", state.stores.wood],
-    ["Stone", state.stores.stone],
-    ["Animals", state.stores.livestock],
-    ["People", getLivingPeople(state).length],
-    ["Etxeak", state.residences.length]
+    { key: "food", icon: "🌾", label: "Food", value: state.stores.food },
+    { key: "wood", icon: "🪵", label: "Wood", value: state.stores.wood },
+    { key: "stone", icon: "🪨", label: "Stone", value: state.stores.stone },
+    { key: "livestock", icon: "🐑", label: "Animals", value: state.stores.livestock },
+    { key: "people", icon: "👥", label: "People", value: getLivingPeople(state).length },
+    { key: "etxeak", icon: "🏠", label: "Etxeak", value: state.residences.length }
   ];
 
   els.resourceBar.innerHTML = resources
-    .map(
-      ([label, value]) => `
+    .map(({ key, icon, label, value }) => {
+      const delta = seasonSummary?.resourceDeltas?.[key] ?? 0;
+      const deltaText = delta === 0 ? "" : `${delta > 0 ? "+" : ""}${delta}`;
+      const deltaClass = delta > 0 ? "is-positive" : delta < 0 ? "is-negative" : "";
+      return `
         <div class="resource-item">
-          <span class="resource-label">${label}</span>
+          <span class="resource-label"><span class="resource-emoji" aria-hidden="true">${icon}</span>${label}</span>
           <span class="resource-value">${value}</span>
+          <span class="resource-delta ${deltaClass}">${deltaText}</span>
         </div>
-      `
-    )
+      `;
+    })
     .join("");
 
+  renderSeasonFeedback(seasonSummary);
   els.slaughterButton.classList.toggle("is-hidden", getCurrentSeason(state) !== "Autumn");
+}
+
+function renderSeasonFeedback(summary) {
+  if (!summary) {
+    els.seasonFeedback.classList.add("is-hidden");
+    els.seasonFeedback.innerHTML = "";
+    return;
+  }
+
+  const messages = summary.messages.length
+    ? summary.messages
+    : ["Nothing notable happened this season."];
+
+  els.seasonFeedback.innerHTML = `
+    <strong>${summary.season} ${summary.year}</strong>
+    <div class="season-feedback-items">
+      ${messages.map((message) => `<span class="season-feedback-item">${message}</span>`).join("")}
+    </div>
+  `;
+  els.seasonFeedback.classList.remove("is-hidden");
 }
 
 export function openFamilyPanel(state, handlers) {
