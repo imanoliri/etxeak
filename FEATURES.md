@@ -46,6 +46,8 @@ Still designed but not yet implemented in MVP-0:
 
 One turn equals one season. Four seasons form a year.
 
+By default, the UI automatically advances one season every **7 seconds**. The player can change the delay from **1–300 seconds**, pause/resume automatic progression, or use the manual **Next season** action. The wall-clock timer is only UI orchestration: every transition still calls the same deterministic seasonal simulation step.
+
 ## Seasonal economy
 
 Different activities matter in different seasons, including:
