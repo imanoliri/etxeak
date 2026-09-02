@@ -30,13 +30,14 @@ const clone = (value) => JSON.parse(JSON.stringify(value));
 
 export function createGame(scenario) {
   const state = {
-    version: 1,
+    version: 2,
     scenarioId: scenario.id,
     familyName: scenario.familyName,
     placeName: scenario.placeName,
     date: { year: 1100, seasonIndex: 0 },
     rngState: scenario.seed >>> 0,
     stores: clone(scenario.stores),
+    commerce: { tradeYearsByPartner: {} },
     people: clone(scenario.people),
     residences: [
       {
@@ -44,6 +45,9 @@ export function createGame(scenario) {
         name: scenario.familyName,
         coords: clone(scenario.center),
         foundedYear: 1100,
+        opened: true,
+        openedYear: 1100,
+        headPersonIds: scenario.people.filter((person) => person.role === "head").map((person) => person.id),
         capacity: scenario.etxeCapacity ?? ETXE_CAPACITY
       }
     ],
@@ -57,6 +61,12 @@ export function createGame(scenario) {
       project: 1
     }
   };
+
+  state.people
+    .filter((person) => person.role === "head")
+    .forEach((person) => {
+      person.headOfResidenceId = "etxe-1";
+    });
 
   state.assets.forEach((asset) => {
     if (asset.type === "field") {
@@ -157,6 +167,7 @@ export function movePerson(state, personId, residenceId) {
   const residence = state.residences.find((entry) => entry.id === residenceId);
   if (!person || !residence) return false;
   if (person.residenceId === residenceId) return true;
+  if (!residence.opened) return false;
   if (!hasResidenceCapacity(state, residenceId)) return false;
   person.residenceId = residenceId;
   return true;
@@ -443,10 +454,13 @@ function completeProject(state, project, messages) {
       name: `Etxe ${state.counters.residence - 1}`,
       coords: [...project.coords],
       foundedYear: state.date.year,
+      opened: false,
+      openedYear: null,
+      headPersonIds: [],
       capacity: ETXE_CAPACITY
     };
     state.residences.push(residence);
-    messages.push(`${residence.name} was completed. Family members can now move there.`);
+    messages.push(`${residence.name} was completed. Choose a working-age man and a wife family to open it.`);
   }
 
   if (project.type === "field") {
