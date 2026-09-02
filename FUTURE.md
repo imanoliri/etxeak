@@ -1,6 +1,25 @@
 # Future
 
-This document contains ideas deliberately **outside the first Urumea MVP**. Items here are not commitments and should not be implemented merely because they are listed.
+This document contains ideas deliberately **outside MVP-0: One House**. Items here are not commitments and should not be implemented merely because they are listed.
+
+## Next milestone: fuller Urumea family world
+
+The first major expansion after MVP-0 is to populate the same map with independent households and social relationships.
+
+Potential additions:
+
+- multiple simulated neighbouring families;
+- marriage between families;
+- kinship networks connecting households;
+- people leaving one family to join another through marriage or opportunity;
+- household splitting into semi-independent family branches;
+- succession and historically grounded inheritance;
+- favours and reciprocal labour;
+- reputation and obligations;
+- local exchange and trade;
+- disputes, alliances, and competition for access to resources.
+
+This turns the MVP-0 household economy into the broader generational social simulation envisioned for Etxeak.
 
 ## Historical institutions and obligations
 
