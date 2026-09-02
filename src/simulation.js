@@ -167,6 +167,7 @@ export function movePerson(state, personId, residenceId) {
   const residence = state.residences.find((entry) => entry.id === residenceId);
   if (!person || !residence) return false;
   if (person.residenceId === residenceId) return true;
+  if (person.headOfResidenceId && person.headOfResidenceId !== residenceId) return false;
   if (!residence.opened) return false;
   if (!hasResidenceCapacity(state, residenceId)) return false;
   person.residenceId = residenceId;
