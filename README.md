@@ -116,6 +116,22 @@ The map covers the chosen Gipuzkoa / adjoining northern Navarre region around th
 
 The unchosen families are alternative starting scenarios only. They do not appear as neighbours or AI-controlled households during MVP-0.
 
+### Current playable slice
+
+The current MVP-0 branch already supports:
+
+- choosing one of four provisional starting families;
+- viewing the chosen family's etxe and productive assets on the real map;
+- changing working-age family members' occupations;
+- advancing through Spring, Summer, Autumn, and Winter;
+- sowing, tending, harvesting, herding, forestry, mining, seasonal consumption, and autumn slaughter;
+- deterministic yearly aging, simple births, and deaths using placeholder prototype rates;
+- starting multi-season projects for a new etxe or a new field;
+- completing construction through Builder labour;
+- moving family members between completed etxeak.
+
+The starting names, demographic rates, production yields, costs, and initial balances are **prototype gameplay values**, not final historical claims. They require historical calibration before the campaign is considered historically representative.
+
 MVP-0 is about proving the household economy and expansion loop:
 
 **choose family → assign/adjust work → advance seasons → produce/consume resources → build/develop assets → move family members → found additional etxeak → repeat**
