@@ -10,7 +10,7 @@
     zoomControl: true,
     attributionControl: true,
     minZoom: 9,
-    maxZoom: 16,
+    maxZoom: 19,
     maxBounds: PLAYABLE_BOUNDS.pad(0.12),
     maxBoundsViscosity: 0.82
   });
@@ -18,7 +18,9 @@
   const topo = L.tileLayer(
     "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
     {
+      maxNativeZoom: 17,
       maxZoom: 17,
+      detectRetina: true,
       attribution:
         'Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, SRTM | Map style © <a href="https://opentopomap.org">OpenTopoMap</a>'
     }
@@ -27,18 +29,20 @@
   const street = L.tileLayer(
     "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
     {
+      maxNativeZoom: 19,
       maxZoom: 19,
+      detectRetina: true,
       attribution:
         '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }
   );
 
-  topo.addTo(map);
+  street.addTo(map);
 
   L.control.layers(
     {
-      "Topographic": topo,
-      "OpenStreetMap": street
+      "OpenStreetMap · detailed": street,
+      "Topographic · regional": topo
     },
     null,
     {
