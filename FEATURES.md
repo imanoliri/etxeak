@@ -10,7 +10,7 @@ The game uses the Urumea-region map, but only **one family is simulated**.
 
 At game start, the player chooses one of several predefined families. Each option has different people, location, buildings/assets, occupations, and starting resources.
 
-Only the chosen family exists during play. The other choices are alternative starting scenarios, not AI neighbours.
+Only the chosen family is simulated during play. The other scenarios are not AI neighbours, but they can appear as **static commerce contacts** when Commerce mode is opened.
 
 ## Implementation status
 
@@ -30,6 +30,7 @@ Implemented on the current MVP-0 branch:
 - construction projects for new etxeak and fields;
 - Builder labour progressing projects over multiple seasons;
 - moving people between completed etxeak;
+- fixed-rate commerce with the unchosen family locations, including map zoom-out, production-limited exports, and distance food costs;
 - deterministic simulation tests run by Netlify before deploy.
 
 Still designed but not yet implemented in MVP-0:
@@ -153,6 +154,20 @@ At minimum, the simulation should support enough resource flow to make seasonal 
 - construction materials;
 - outputs required by enabled productive assets.
 
+## Commerce
+
+- The Commerce action temporarily shows the unchosen starting-family locations on the map and automatically zooms out to include them.
+- Those families are **static trade contacts only**; their population, stores, births, deaths, work, and decisions are not simulated.
+- Each contact can sell only resources implied by its productive assets:
+  - fields → food;
+  - pasture → livestock and food;
+  - forest → wood;
+  - mine → stone.
+- A trade exchanges **5 units of one player resource for 1 unit of a resource the other family produces**.
+- Every trade also consumes **1 food per started 50 km** between that family and the player's nearest etxe.
+- Distance uses the same geographic coordinates as the map, but trade calculations are simulation/domain logic rather than Leaflet state.
+- Static trade contacts have no finite stock in MVP-0. Dynamic inventories, prices, bargaining, markets, and autonomous trade belong to later systems.
+
 ## Construction and development
 
 Projects consume labour, materials, and time.
@@ -201,7 +216,6 @@ MVP-0 has none of the following:
 - simulated neighbouring families;
 - diplomacy or reputation;
 - favours or reciprocal labour;
-- trade between families;
 - external marriage;
 - feuds or warfare;
 - Church/lordship/political systems;
