@@ -100,24 +100,52 @@ Campaigns are grounded in real regions and historical periods. A campaign may sp
 
 Different campaigns can explore different transformations of the historical Basque world while reusing the same generational simulation.
 
-## First campaign / MVP: Urumea, c. 1100
+## MVP-0: One House
 
-The first playable campaign is set in the **Urumea valley around 1100**.
+Before the full Urumea campaign, Etxeak starts with a deliberately smaller playable prototype: **MVP-0: One House**.
 
-The player begins with one household of roughly **6–10 people**, some cultivated land, animals, access to surrounding resources such as forest or pasture, and relationships with nearby households.
+The map covers the chosen Urumea-region campaign area, but **only one family exists in the simulation at a time**. At the start of a game, the player chooses one of several predefined starting families. Each starting family has its own:
 
-The first MVP deliberately focuses on a coherent simulation chain:
+- name and household members;
+- starting location;
+- population and age structure;
+- dwelling(s);
+- fields, livestock, woodland, mines, workshops, or other starting assets;
+- stored resources;
+- occupations and available labour.
 
-1. **People** — household members are born, age, work, marry, migrate, and die.
-2. **Kinship** — family relationships, marriage, descent, household heads, and genealogy.
-3. **Land and assets** — real places, fields, livestock, pasture, woodland, and productive sites.
-4. **Seasonal labour** — persistent occupations, automatic work assignment, and player overrides.
-5. **Production and consumption** — food, stores, livestock, and winter survival.
-6. **Construction** — multi-season development of land, dwellings, and productive assets.
-7. **Household formation and migration** — marriages, departures, arrivals, and new houses.
-8. **Succession** — inheritance, continuity of the etxe, and branching family lines.
+The unchosen families are alternative starting scenarios only. They do not appear as neighbours or AI-controlled households during MVP-0.
 
-If these systems can naturally create stories such as *a marriage made for pasture access reshaping inheritance two generations later*, the core of Etxeak is working.
+MVP-0 is about proving the household economy and expansion loop:
+
+**choose family → assign/adjust work → advance seasons → produce/consume resources → build/develop assets → move family members → found additional etxeak → repeat**
+
+Included in MVP-0:
+
+1. **Seasonal turns** with different agricultural and productive activities.
+2. **One simulated family/lineage** with persistent individual people.
+3. **Organic aging and population change** within that family.
+4. **Occupations and automatic labour assignment**, with player overrides.
+5. **Resource production and consumption** from explicit assets.
+6. **Construction and land-development projects** that take labour, materials, and time.
+7. **Multiple player-controlled residences/etxeak** belonging to the same family.
+8. **Moving family members between etxeak** and assigning them to work there.
+9. **Real map locations** determining where buildings and productive assets exist.
+
+Explicitly excluded from MVP-0:
+
+- other simulated families;
+- marriage with external families;
+- diplomacy, reputation, favours, feuds, or social interaction;
+- trade with neighbouring households;
+- political or religious institutions;
+- succession disputes and complex inheritance;
+- autonomous cadet lineages;
+- historical-event systems beyond what is required for the basic seasonal economy.
+
+The purpose of MVP-0 is narrower than the eventual game: prove that **one family living, working, building, expanding, and redistributing its people across a real landscape is already a satisfying simulation**.
+
+The fuller **Urumea MVP** comes later and adds other households, kinship between families, marriage, migration networks, inheritance, and social/historical interaction.
 
 ## Documentation
 
