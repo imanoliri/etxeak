@@ -334,7 +334,7 @@ Historical change modifies available actions and incentives rather than awarding
 The MVP-0 implementation is deliberately lightweight and framework-free:
 
 - `src/scenarios.js` — data-driven starting families, people, initial resources, and assets;
-- `src/simulation.js` — deterministic seasonal economy, demography, construction, occupations, and movement;
+- `src/simulation.js` — deterministic seasonal economy, demography, food-shortage pressure, construction, occupation restoration, and movement;
 - `src/commerce.js` — deterministic resource values, value-based trade quotes, partner production capability, geographic distance, transport cost, and distinct trade-year history;
 - `src/households.js` — eligible etxe founders, marriage-value calculation, static wife candidates, resource payment, and opening a completed etxe with a founding couple;
 - `src/map.js` — Leaflet-only rendering and map interaction;
@@ -392,6 +392,29 @@ A starting scenario is data, not bespoke code. Each scenario defines:
 - initial construction/development options.
 
 The player selects exactly one starting family when beginning a game. Other starting families are not instantiated.
+
+### Builder occupation restoration
+
+Builder is treated as a temporary assignment when it replaces another occupation.
+
+- assigning a working person to Builder remembers their last non-Builder occupation;
+- when the final active construction/land-development project completes, Builders automatically return to that remembered occupation;
+- a Builder without remembered work falls back to a sensible nearby non-construction occupation;
+- occupation restoration happens in simulation state, not UI state.
+
+### Food shortages
+
+MVP-0 tracks food shortages across the current calendar year.
+
+- every season in which household food is insufficient increments yearly shortage pressure;
+- at year end, each shortage season adds age-sensitive mortality risk;
+- each shortage season reduces the annual household birth chance by 5 percentage points from the current 20% prototype baseline, reaching zero after four shortage seasons;
+- after annual demography resolves, the yearly shortage counter resets;
+- these are provisional gameplay rates, not final historical calibration.
+
+### Failed sowing state
+
+Fields persist a `sowingFailed` flag and failure reason after an unsuccessful spring sowing attempt. Failure can be caused by either no available Farmer or no seed food. The map reads that simulation state and renders a red warning ring around the field marker; Leaflet is not the source of truth.
 
 ### Etxe capacity and spatial labour
 
