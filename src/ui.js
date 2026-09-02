@@ -100,6 +100,7 @@ export function openFamilyPanel(state, handlers) {
   els.panelKicker.textContent = "FAMILY";
   els.panelTitle.textContent = state.familyName;
 
+  const genealogy = genealogyHtml(state);
   const peopleHtml = getLivingPeople(state)
     .sort((a, b) => b.age - a.age)
     .map((person) => personRow(state, person))
@@ -120,6 +121,10 @@ export function openFamilyPanel(state, handlers) {
     .join("");
 
   els.panelContent.innerHTML = `
+    <section class="panel-section">
+      <h3>Family tree</h3>
+      ${genealogy}
+    </section>
     <section class="panel-section">
       <h3>People</h3>
       ${peopleHtml}
@@ -143,6 +148,33 @@ export function openFamilyPanel(state, handlers) {
   });
 
   els.sidePanel.classList.remove("is-hidden");
+}
+
+function genealogyHtml(state) {
+  const heads = state.people.filter((person) => person.role === "head").slice(0, 2);
+  const headIds = new Set(heads.map((person) => person.id));
+  const children = state.people
+    .filter((person) => person.parentIds?.some((parentId) => headIds.has(parentId)))
+    .sort((a, b) => b.age - a.age);
+
+  const personLabel = (person) => `
+    <span class="genealogy-person ${person.alive ? "" : "is-deceased"}">
+      <strong>${person.givenName} ${person.surname}</strong>
+      <small>${person.alive ? `${person.age} years` : `died at ${person.age}`}</small>
+    </span>
+  `;
+
+  return `
+    <div class="genealogy-tree">
+      <div class="genealogy-couple">
+        ${heads.map(personLabel).join('<span class="genealogy-link">×</span>')}
+      </div>
+      <div class="genealogy-stem" aria-hidden="true"></div>
+      <div class="genealogy-children">
+        ${children.map(personLabel).join("") || '<span class="muted">No children recorded.</span>'}
+      </div>
+    </div>
+  `;
 }
 
 function personRow(state, person) {
