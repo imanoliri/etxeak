@@ -335,6 +335,7 @@ The MVP-0 implementation is deliberately lightweight and framework-free:
 
 - `src/scenarios.js` — data-driven starting families, people, initial resources, and assets;
 - `src/simulation.js` — deterministic seasonal economy, demography, construction, occupations, and movement;
+- `src/commerce.js` — deterministic fixed-rate trade rules, partner production capability, geographic distance, and transport cost;
 - `src/map.js` — Leaflet-only rendering and map interaction;
 - `src/ui.js` — DOM rendering for setup, family, build, resources, and summaries;
 - `src/main.js` — application orchestration;
@@ -408,6 +409,22 @@ For MVP-0, new etxe projects must themselves be within 1.5 km of an existing etx
 
 Both values are provisional balance constants and should remain easy to configure.
 
+### Static commerce contacts
+
+MVP-0 still simulates exactly one family. The unchosen starting scenarios may, however, be projected onto the map as **static commerce contacts**.
+
+Commerce is intentionally shallow:
+
+- entering Commerce mode reveals the other scenario locations and fits the map to them;
+- a contact's saleable resources are derived from its configured productive assets;
+- the player gives 5 units of one resource to receive 1 unit of a resource that contact produces;
+- transport additionally costs 1 food per started 50 km from the player's nearest etxe;
+- the contact has no simulated inventory, labour, demography, preferences, or price response.
+
+The trade calculation lives in `src/commerce.js`, outside Leaflet/UI code. The map only displays partner locations and the UI only submits trade choices.
+
+This is an explicit MVP-0 exception to the otherwise single-family world: other families exist as fixed external economic endpoints, not autonomous household simulations.
+
 ### Controlled family and etxeak
 
 MVP-0 has one controlled lineage/family that may occupy **multiple physical etxeak** over time.
@@ -435,7 +452,7 @@ The current engine implements this resolution in `src/simulation.js`. Each turn 
 7. movement between the family's etxeak resolves;
 8. season summary is shown.
 
-No relationship, diplomacy, external marriage, inter-family market, feud, or reputation phase exists in MVP-0.
+No relationship, diplomacy, external marriage, dynamic inter-family market, feud, or reputation phase exists in MVP-0. Fixed static commerce is handled as an immediate player action outside seasonal resolution.
 
 ### Map implementation
 
@@ -471,6 +488,7 @@ The first playable version needs only:
 - **Build/develop controls** — create/expand fields, dwellings, and other enabled assets.
 - **Move people** — reassign eligible family members to another family etxe.
 - **Season summary** — outputs, consumption, population changes, project progress.
+- **Commerce mode** — reveal static external families, inspect distance/production, and execute fixed-rate trades.
 
 ### MVP-0 success criterion
 
