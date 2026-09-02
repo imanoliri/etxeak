@@ -21,6 +21,46 @@ Potential additions:
 
 This turns the MVP-0 household economy into the broader generational social simulation envisioned for Etxeak.
 
+## Smaller, immediately visible feature candidates
+
+These are comparatively contained systems that could enrich the one-house simulation before the full neighbouring-household world is built:
+
+- **Seasonal weather:** rain, drought, frost, snow, and storms modifying crops, travel, livestock, and outdoor work.
+- **Village market or fair:** periodic opportunities to buy and sell surplus grain, livestock, tools, cloth, and other goods.
+- **Hunting and foraging:** seasonal collection of game, fish, berries, mushrooms, nuts, firewood, and other wild resources, especially during shortages.
+- **Food preservation and spoilage:** grain stores, smoked or salted meat, cheese, cider/wine, and preservation choices that make slaughter and harvest timing matter.
+- **Household needs panel:** a compact view of food, fuel, shelter, clothing, and labour pressures explaining why the household is prospering or struggling.
+- **Animal reproduction:** plausible breeding and seasonally concentrated births for cattle, sheep, pigs, and goats.
+- **Animal age and slaughter:** newborn, juvenile, adult, and old life stages, with household choices about breeding, keeping, selling, or slaughtering animals.
+- **Construction queue:** several simultaneous or ordered building and land-development projects that consume workers, materials, and seasonal time.
+- **Occupational progression:** repeated work as a farmer, shepherd, carpenter, smith, miner, fisher, or other craft gradually improves skill and output.
+- **Annual harvest summary:** an autumn or year-end account of harvest quality, orchard yields, livestock births and deaths, slaughter, and important store changes.
+- **Small event log:** a chronological record of births, deaths, marriages, migrations, construction, harvest failures, livestock events, and other notable changes.
+- **Village population overview:** a compact screen summarizing households, inhabitants, eligible workers, occupations, animals, and stored resources.
+- **Named fields and buildings:** persistent local names such as *Goiko Soroa* or *Errotalde* for land parcels, dwellings, and productive structures.
+- **Woodland management:** gradual regeneration alongside firewood and timber extraction, woodland clearance, and depletion.
+- **Orchards:** apples, chestnuts, walnuts, and other historically enabled trees with planting, maturation, spring flowering, and autumn harvests.
+- **Fishing:** seasonal river or coastal catches where geography and campaign data permit them.
+- **Tool wear and repair:** ploughs, axes, carts, fishing gear, and craft tools deteriorate and require maintenance or replacement.
+- **Storage capacity:** barns, granaries, cellars, and other buildings limit how much food and material can be stored safely.
+- **Travel time to work:** distance between residences and fields, pastures, mines, forests, ports, or markets reduces productive time.
+- **Seasonal calendar flavour:** period- and region-appropriate labels and activities such as lambing, sowing, pruning, haymaking, harvest, and slaughter.
+
+## Social and generational feature candidates
+
+These systems are larger and generally depend on multiple simulated households:
+
+- **Household ambitions and tensions:** each household develops a small number of long-term pressures, such as needing land, seeking status, arranging an alliance, handling too many heirs, servicing debt, or founding a new house.
+- **Inheritance and succession:** dwellings, land, livestock, workshops, debts, and authority pass through configurable historical rules, including impartible inheritance, dowries, younger siblings leaving, widows retaining control, and disputes.
+- **Neighbourhood social network:** kinship, friendship, rivalry, debt, patronage, feud, and other relationships connect houses and influence decisions.
+- **Seasonal communal work:** households cooperate on harvests, threshing, house construction, herd movement, road repair, and woodland clearance, creating reciprocal obligations.
+- **Emergent life events:** births, pregnancies, illness, accidents, fire, livestock disease, death, migration, inheritance, weddings, and disputes arise from simulation state and are preserved in household history.
+- **Marriage market:** plausible matches are generated from geography, wealth, status, kinship restrictions, household needs, and campaign-specific residence customs; marriage can reshape both residence and property.
+- **House reputation and standing:** descriptive reputations such as wealthy, reliable, violent, pious, old lineage, newcomer, skilled craft household, or bad debtor affect how others respond.
+- **Debt and informal credit:** households borrow grain, livestock, labour, or money from neighbours, merchants, monasteries, and elites, allowing a bad season to create multi-year obligations.
+- **Land fragmentation and consolidation:** inheritable parcels can be divided, exchanged, purchased, transferred through marriage, or recombined so property boundaries record generational history.
+- **Generational chronicle:** the game automatically composes a concise, exportable history of each house from marriages, births, deaths, construction, land transfers, occupations, migrations, conflicts, and other simulated events.
+
 ## Historical institutions and obligations
 
 - churches, monasteries, parishes, and ecclesiastical careers
