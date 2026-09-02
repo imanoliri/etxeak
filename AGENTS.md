@@ -99,7 +99,7 @@ Do not implement features from FUTURE.md unless explicitly requested.
 
 The current implementation target is **MVP-0: One House**.
 
-MVP-0 contains exactly one simulated family chosen from several predefined starting scenarios. Do not create AI neighbouring families merely because the map contains other places.
+MVP-0 contains exactly one simulated family chosen from several predefined starting scenarios. Do not create AI neighbouring families merely because the map contains other places. Unchosen scenarios may appear only as static commerce contacts under the documented fixed trade rules.
 
 Prioritize this coherent loop:
 
@@ -110,7 +110,7 @@ For MVP-0 specifically:
 - no diplomacy;
 - no other-family relationships;
 - no external marriage;
-- no family-to-family trade;
+- no simulated/dynamic family-to-family economy; the only allowed MVP-0 exception is the documented fixed static commerce system;
 - no feuds;
 - no political/religious interaction systems;
 - no autonomous cadet families.
