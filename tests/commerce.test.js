@@ -14,7 +14,7 @@ import {
 import { advanceSeason, createGame } from "../src/simulation.js";
 
 test("commerce uses the configured resource values", () => {
-  assert.deepEqual(RESOURCE_VALUES, { food: 1, wood: 2, stone: 3 });
+  assert.deepEqual(RESOURCE_VALUES, { food: 1, wood: 2, stone: 3, livestock: 3 });
 });
 
 test("trade partners only sell valued resources their assets produce", () => {
@@ -26,7 +26,7 @@ test("trade partners only sell valued resources their assets produce", () => {
   assert.ok(produced.includes("wood"));
   assert.ok(produced.includes("food"));
   assert.equal(produced.includes("stone"), false);
-  assert.equal(produced.includes("livestock"), false);
+  assert.ok(produced.includes("livestock"));
 });
 
 test("5:1 commerce applies to value and rounds payment upward", () => {
@@ -105,4 +105,23 @@ test("trade relationship counts distinct years, not number of trades", () => {
 
   assert.equal(tradeWithFamily(state, partner, "stone", "wood").ok, true);
   assert.equal(getTradeYearsWithFamily(state, partner.id), 2);
+});
+
+
+test("livestock has commerce value 3 and can be traded from pasture-producing families", () => {
+  const partner = STARTING_SCENARIOS.find((scenario) =>
+    scenario.assets.some((asset) => asset.type === "pasture")
+  );
+  assert.ok(partner);
+
+  const state = createGame(
+    STARTING_SCENARIOS.find((scenario) => scenario.id !== partner.id)
+  );
+  state.stores.food = 100;
+
+  const quote = getTradeQuote(state, partner, "food", "livestock");
+  assert.equal(quote.ok, true);
+  assert.equal(quote.receiveValue, 3);
+  assert.equal(quote.targetValue, 15);
+  assert.equal(quote.giveAmount, 15);
 });
