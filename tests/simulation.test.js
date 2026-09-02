@@ -50,7 +50,7 @@ test("occupation changes are rejected for children below work age", () => {
 
 test("new etxe project completes with builder work and accepts residents", () => {
   const state = createGame(STARTING_SCENARIOS[1]);
-  const result = startProject(state, "etxe", [43.27, -1.89]);
+  const result = startProject(state, "etxe", [43.301, -1.855]);
   assert.equal(result.ok, true);
 
   for (let i = 0; i < 4 && state.residences.length === 1; i += 1) {
@@ -181,7 +181,7 @@ test("a productive asset needs a worker living within the etxe work radius", () 
   advanceSeason(state);
 
   assert.equal(field.state.sown, false);
-  assert.equal(ETXE_WORK_RADIUS_KM, 5);
+  assert.equal(ETXE_WORK_RADIUS_KM, 1);
 });
 
 test("new etxe placement is limited to the work radius of an existing etxe", () => {
