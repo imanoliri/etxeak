@@ -688,3 +688,292 @@ select {
     margin-top: 110px !important;
   }
 }
+
+
+/* --- Compact map-first HUD refinement --- */
+
+.leaflet-tile-pane {
+  filter: saturate(0.72) sepia(0.06) contrast(0.96) brightness(1.03);
+}
+
+.game-header {
+  top: max(10px, env(safe-area-inset-top));
+  left: max(10px, env(safe-area-inset-left));
+  right: max(10px, env(safe-area-inset-right));
+  align-items: center;
+}
+
+.title-block {
+  max-width: min(42vw, 250px);
+  border: 1px solid rgba(248, 246, 239, 0.2);
+  border-radius: 11px;
+  background: rgba(23, 38, 31, 0.82);
+  padding: 6px 9px 7px;
+  text-shadow: none;
+  box-shadow: 0 7px 20px rgba(17, 27, 22, 0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.title-block .eyebrow {
+  margin-bottom: 1px;
+  font-size: 0.5rem;
+  letter-spacing: 0.12em;
+  opacity: 0.62;
+}
+
+.title-block h1 {
+  overflow: hidden;
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(0.96rem, 3vw, 1.24rem);
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.time-block {
+  display: flex;
+  align-items: stretch;
+  justify-items: initial;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid rgba(23, 38, 31, 0.16);
+  border-radius: 11px;
+  background: rgba(248, 246, 239, 0.95);
+  box-shadow: 0 7px 20px rgba(17, 27, 22, 0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.time-block .chip,
+.time-block .season-clock {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.time-block .chip {
+  min-width: 0;
+  padding: 7px 9px;
+  border-right: 1px solid rgba(23, 38, 31, 0.12);
+  font-size: 0.68rem;
+  white-space: nowrap;
+}
+
+.time-block .season-clock {
+  gap: 4px;
+  padding: 3px 4px;
+}
+
+.timer-toggle {
+  min-width: 48px;
+  padding: 5px 7px;
+  border-radius: 7px;
+  font-size: 0.66rem;
+}
+
+.timer-delay {
+  gap: 2px;
+  font-size: 0.58rem;
+}
+
+.timer-delay input {
+  width: 35px;
+  padding: 4px 3px;
+  font-size: 0.67rem;
+}
+
+.timer-countdown {
+  min-width: 32px;
+  font-size: 0.64rem;
+}
+
+.resource-bar {
+  top: max(58px, calc(env(safe-area-inset-top) + 54px));
+  left: 50%;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  width: min(680px, calc(100vw - 20px));
+  max-width: none;
+  transform: translateX(-50%);
+  overflow: hidden;
+  border-radius: 11px;
+  padding: 0;
+  background: rgba(248, 246, 239, 0.93);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.resource-item {
+  display: grid;
+  min-width: 0;
+  place-items: center;
+  gap: 1px;
+  padding: 5px 3px 6px;
+  text-align: center;
+}
+
+.resource-label {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 0.5rem;
+  letter-spacing: 0.045em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resource-value {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1;
+}
+
+.action-dock {
+  bottom: max(9px, env(safe-area-inset-bottom));
+  width: min(560px, calc(100vw - 18px));
+  max-width: none;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(248, 246, 239, 0.94);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.action-dock button {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 7px 11px;
+  border-radius: 8px;
+  font-size: 0.74rem;
+}
+
+.action-dock #family-button,
+.action-dock #build-button {
+  min-width: 76px;
+}
+
+.action-dock #next-season-button {
+  flex: 1 1 150px;
+  min-width: 126px;
+  font-weight: 850;
+}
+
+.side-panel {
+  border-radius: 16px;
+}
+
+.game-marker {
+  width: 30px;
+  height: 30px;
+  border-width: 1.5px;
+}
+
+.game-marker svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.game-marker[data-kind="home"] svg,
+.game-marker[data-kind="scenario"] svg {
+  fill: currentColor;
+  stroke-width: 1.25;
+}
+
+.game-marker.asset {
+  border-radius: 50%;
+}
+
+.leaflet-top.leaflet-right {
+  top: max(98px, calc(env(safe-area-inset-top) + 94px));
+}
+
+.leaflet-top.leaflet-right .leaflet-control {
+  margin-top: 7px;
+  margin-right: max(10px, env(safe-area-inset-right));
+}
+
+.leaflet-control-zoom {
+  margin-top: 7px !important;
+}
+
+.toast {
+  bottom: max(66px, calc(env(safe-area-inset-bottom) + 58px));
+}
+
+@media (max-width: 700px) {
+  .title-block {
+    max-width: 39vw;
+    padding: 5px 7px 6px;
+  }
+
+  .title-block h1 {
+    font-size: 0.94rem;
+  }
+
+  .time-block .chip {
+    padding-inline: 7px;
+    font-size: 0.62rem;
+  }
+
+  .timer-delay span:first-child {
+    display: none;
+  }
+
+  .resource-bar {
+    left: 50%;
+    right: auto;
+    width: calc(100vw - 18px);
+    transform: translateX(-50%);
+  }
+
+  .resource-item {
+    padding-inline: 2px;
+  }
+
+  .resource-label {
+    font-size: 0.46rem;
+  }
+
+  .resource-value {
+    font-size: 0.86rem;
+  }
+
+  .action-dock {
+    width: calc(100vw - 18px);
+  }
+
+  .action-dock button {
+    flex: 0 0 auto;
+    padding-inline: 9px;
+    font-size: 0.72rem;
+  }
+
+  .action-dock #family-button,
+  .action-dock #build-button {
+    min-width: 70px;
+  }
+
+  .action-dock #next-season-button {
+    flex: 1 1 auto;
+  }
+
+  .side-panel {
+    left: 9px;
+    right: 9px;
+    bottom: max(9px, env(safe-area-inset-bottom));
+    width: calc(100vw - 18px);
+    height: min(58vh, 560px);
+  }
+
+  .leaflet-top.leaflet-right {
+    top: max(94px, calc(env(safe-area-inset-top) + 90px));
+  }
+}
