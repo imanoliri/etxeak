@@ -125,7 +125,7 @@ The current MVP-0 branch already supports:
 - viewing the family's genealogy and parent/child relationships;
 - automatically assigning an occupation when children reach working age, with player overrides;
 - changing working-age family members' occupations;
-- advancing through Spring, Summer, Autumn, and Winter;
+- advancing automatically through Spring, Summer, Autumn, and Winter on a configurable timer (7 seconds by default), with pause/play and manual advance controls;
 - sowing, tending, harvesting, herding, forestry, mining, seasonal consumption, and autumn slaughter;
 - deterministic yearly aging, simple births, and deaths using placeholder prototype rates;
 - starting multi-season projects for a new etxe or a new field;
