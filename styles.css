@@ -1132,3 +1132,53 @@ select {
     font-size: 0.58rem;
   }
 }
+
+
+/* --- Etxe capacity and work radius --- */
+
+.marker-capacity {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 27px;
+  transform: translateX(-50%);
+  min-width: 30px;
+  border: 1px solid rgba(23, 38, 31, 0.28);
+  border-radius: 999px;
+  background: rgba(248, 246, 239, 0.96);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  padding: 2px 5px;
+  color: #17261f;
+  font-size: 0.58rem;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.etxe-capacity-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  gap: 4px 9px;
+  border: 1px solid rgba(23, 38, 31, 0.11);
+  border-radius: 11px;
+  background: rgba(23, 38, 31, 0.055);
+  padding: 10px;
+}
+
+.etxe-capacity-card strong {
+  grid-row: 1 / span 2;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.2rem;
+}
+
+.etxe-capacity-card span,
+.etxe-capacity-card small {
+  font-size: 0.72rem;
+  line-height: 1.25;
+}
+
+.etxe-capacity-card small {
+  opacity: 0.6;
+}
