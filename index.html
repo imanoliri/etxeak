@@ -19,7 +19,18 @@
         <p class="eyebrow">ETXEAK · MVP-0</p>
         <h1 id="game-title">One House</h1>
       </div>
-      <button id="date-chip" class="chip" type="button" disabled>Spring · 1100</button>
+      <div class="time-block">
+        <button id="date-chip" class="chip" type="button" disabled>Spring · 1100</button>
+        <div id="season-clock" class="season-clock is-hidden" aria-label="Season timer">
+          <button id="timer-toggle" class="timer-toggle" type="button" aria-pressed="false">Pause</button>
+          <label class="timer-delay">
+            <span>Every</span>
+            <input id="timer-seconds" type="number" min="1" max="300" step="1" value="7" inputmode="numeric" aria-label="Seconds per season" />
+            <span>s</span>
+          </label>
+          <span id="timer-countdown" class="timer-countdown" aria-live="off">7.0s</span>
+        </div>
+      </div>
     </header>
 
     <section id="resource-bar" class="resource-bar is-hidden" aria-label="Family resources"></section>
