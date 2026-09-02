@@ -9,7 +9,7 @@ The first major expansion after MVP-0 is to populate the same map with independe
 Potential additions:
 
 - multiple simulated neighbouring families;
-- marriage between families;
+- negotiated marriage between fully simulated families beyond MVP-0's static wife-sourcing mechanic;
 - kinship networks connecting households;
 - people leaving one family to join another through marriage or opportunity;
 - household splitting into semi-independent family branches;
@@ -47,7 +47,7 @@ Violence should remain a consequence affecting real people and households rather
 
 ## Deeper economy
 
-MVP-0 has only fixed 5:1 static commerce. Future economy systems can replace or extend that abstraction with:
+MVP-0 has only static value-based commerce with a 5× received-value premium. Future economy systems can replace or extend that abstraction with:
 
 - local and regional markets
 - prices driven by access, scarcity, and demand
