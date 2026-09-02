@@ -376,7 +376,6 @@ function resolveField(state, asset, season, pools, messages, activities) {
     asset.state.sowingFailureReason = null;
 
     if (!worked) {
-      messages.push(`${asset.name}: could not be sown because no farmer was available.`);
       return;
     }
     if (state.stores.food < 1) {
@@ -405,8 +404,6 @@ function resolveField(state, asset, season, pools, messages, activities) {
       const yieldAmount = asset.state.tended ? 9 : 6;
       state.stores.food += yieldAmount;
       messages.push(`${asset.name}: harvested +${yieldAmount} food.`);
-    } else if (asset.state.sown) {
-      messages.push(`${asset.name}: harvest was lost because no farmer worked it.`);
     }
 
     asset.state.sown = false;
