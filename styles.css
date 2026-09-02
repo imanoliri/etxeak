@@ -1186,6 +1186,12 @@ select {
   border-color: #fffaf0;
 }
 
+.game-marker.asset.sowing-failed {
+  box-shadow:
+    0 0 0 3px #b52d2d,
+    0 2px 7px rgba(0, 0, 0, 0.35);
+}
+
 .game-marker[data-kind="forest"] {
   background: #3f6f4d;
   color: #fffaf0;
