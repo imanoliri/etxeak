@@ -391,6 +391,23 @@ A starting scenario is data, not bespoke code. Each scenario defines:
 
 The player selects exactly one starting family when beginning a game. Other starting families are not instantiated.
 
+### Etxe capacity and spatial labour
+
+MVP-0 gives every residence two explicit gameplay constraints:
+
+- **capacity** — default 8 residents;
+- **work radius** — 5 km.
+
+Capacity is stored on each residence so later building types/upgrades can vary it. Birth creation and movement into a residence both check available capacity. The two household heads must also reside in the same etxe for the current simplified birth rule.
+
+Labour availability is spatial rather than tied only to an asset's nominal owning residence. For each productive asset or construction project, the simulation selects the nearest unused worker with the required occupation whose residence is within the 5 km work radius. A person can therefore work an asset associated with another family etxe if their own etxe is close enough, while remote assets remain inactive.
+
+The work radius is simulation data expressed in kilometres; Leaflet only visualizes it as a subtle circle. Map rendering must never become the source of truth for distance checks.
+
+For MVP-0, new etxe projects must themselves be within 5 km of an existing etxe so construction can be physically reached. This makes expansion a sequence of inhabited/workable nodes.
+
+Both values are provisional balance constants and should remain easy to configure.
+
 ### Controlled family and etxeak
 
 MVP-0 has one controlled lineage/family that may occupy **multiple physical etxeak** over time.
