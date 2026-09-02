@@ -355,20 +355,84 @@ Save data should be versioned JSON and include:
 
 A fixed seed is important for debugging and for reproducible tests.
 
-## MVP interfaces
+## MVP-0 architecture: One House
 
-The first playable version should eventually expose:
+MVP-0 intentionally runs only **one family simulation**. The map may contain many usable locations, but there are no AI households or neighbouring-family agents.
 
-- **World/map view** — places, resources, households, and movement.
-- **Household view** — heads, members, stores, assets, obligations, and current work.
-- **Season planning view** — auto assignments plus player overrides and projects.
-- **Genealogy view** — family tree and household branches.
-- **Season/year summary** — production, consumption, births/deaths, migrations, marriages, and notable events.
+### Starting scenarios
 
-## MVP boundary
+A starting scenario is data, not bespoke code. Each scenario defines:
 
-The Urumea MVP proves this chain:
+- family/household identity and display name;
+- starting people and genealogy;
+- starting residence/location;
+- starting assets and stores;
+- occupations;
+- initial construction/development options.
 
-**season → labour → production/consumption → demographic/social change → household continuity**
+The player selects exactly one starting family when beginning a game. Other starting families are not instantiated.
 
-If that chain produces believable multi-generational stories, later historical systems can be layered onto it without changing the fundamental architecture.
+### Controlled family and etxeak
+
+MVP-0 has one controlled lineage/family that may occupy **multiple physical etxeak** over time.
+
+This means:
+
+- there is one family-level simulation context;
+- there may be several household/residence groups belonging to that family;
+- people can be moved between residences;
+- each residence can have its own local assets and work;
+- founding a new etxe does not create a competing AI faction.
+
+For MVP-0, avoid introducing a generalized diplomacy/other-household framework unless required by later architecture boundaries.
+
+### Simplified seasonal resolution
+
+Each turn resolves:
+
+1. season opens;
+2. persistent occupations generate suggested work assignments;
+3. player may override assignments and choose construction/development;
+4. production and project progress resolve;
+5. consumption/storage resolve;
+6. aging, births/deaths, and simple family changes resolve;
+7. movement between the family's etxeak resolves;
+8. season summary is shown.
+
+No relationship, diplomacy, external marriage, inter-family market, feud, or reputation phase exists in MVP-0.
+
+### MVP-0 interfaces
+
+The first playable version needs only:
+
+- **Start-family selection** — choose one predefined family/scenario.
+- **Map view** — real geography, family etxeak, buildable/productive locations, and assets.
+- **Family view** — named people, ages, genealogy, residence, occupation, and work status.
+- **Etxe view** — residents, stores, buildings/assets, and current projects.
+- **Season planning** — suggested labour plus player overrides.
+- **Build/develop controls** — create/expand fields, dwellings, and other enabled assets.
+- **Move people** — reassign eligible family members to another family etxe.
+- **Season summary** — outputs, consumption, population changes, project progress.
+
+### MVP-0 success criterion
+
+MVP-0 proves this chain:
+
+**family → people → occupations → seasonal work → resources → construction → new etxe → redistribution of people**
+
+If that loop is understandable and enjoyable with no other families present, the simulation is ready for the fuller Urumea MVP.
+
+## Post-MVP-0 architecture
+
+Later versions can activate the already-planned broader systems:
+
+- multiple independent households;
+- marriage between families;
+- kinship networks;
+- inheritance and succession;
+- migration outside the controlled family;
+- relationships, favours, obligations, reputation, and conflict;
+- markets and institutions;
+- historical change.
+
+These must layer on top of the MVP-0 simulation rather than replacing its household economy.
