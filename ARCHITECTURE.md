@@ -192,6 +192,39 @@ An asset defines:
 - access/ownership
 - modifiers
 
+### Livestock animal
+
+MVP-0 now keeps sheep as explicit simulation entities rather than allowing the pasture system to manufacture anonymous livestock points.
+
+Each animal record contains:
+
+- stable animal ID;
+- species/kind (`sheep` in the current prototype);
+- sex;
+- age in whole years;
+- alive/dead state.
+
+Life stage is derived from age rather than stored as an independent source of truth:
+
+- newborn: age < 1;
+- juvenile: 1 ≤ age < 2;
+- adult: 2 ≤ age < 8;
+- old: age ≥ 8.
+
+The aggregate `stores.livestock` number remains for compatibility with the existing HUD/value economy, but it is a synchronized projection of living animal records. All mutations that add/remove livestock must pass through livestock-domain helpers so the aggregate count cannot drift from explicit state.
+
+Current reproduction rule:
+
+- resolve in Spring;
+- require at least one worked pasture with a Herder;
+- require at least one adult female and one adult male;
+- each worked pasture can produce at most one lamb, capped by the number of adult females;
+- newborn sex uses the same deterministic seeded RNG as other simulation randomness.
+
+At the end of Winter, every living animal ages by one year. Slaughter removes an explicit animal, prefers older slaughterable stock, protects an existing adult breeding pair where possible, and uses age-dependent prototype food yields.
+
+The present age thresholds, starting-age distribution, reproduction cap, and slaughter yields are gameplay placeholders. They must remain easy to replace with campaign/species-specific historical data later.
+
 ### Occupation and work assignment
 
 A person can have a persistent occupation such as farmer, herder, charcoal burner, miner, smith, builder, transporter, etc.
@@ -283,13 +316,14 @@ The Urumea MVP should at minimum support distinct windows for:
 
 - planting/sowing
 - livestock care and grazing
+- spring animal reproduction
 - harvest
 - slaughter and preservation
 - woodland work
 - construction
-- winter consumption and maintenance
+- winter consumption, maintenance, and annual animal aging
 
-The calendar must be configuration, because agricultural timing and economic activities can differ by period, elevation, crop, and region.
+The calendar must be configuration, because agricultural timing and economic activities can differ by period, elevation, crop, animal species, and region.
 
 ## Demography
 
@@ -334,13 +368,14 @@ Historical change modifies available actions and incentives rather than awarding
 The MVP-0 implementation is deliberately lightweight and framework-free:
 
 - `src/scenarios.js` — data-driven starting families, people, initial resources, and assets;
-- `src/simulation.js` — deterministic seasonal economy, demography, food-shortage pressure, construction, occupation restoration, and movement;
-- `src/commerce.js` — deterministic resource values, value-based trade quotes, partner production capability, geographic distance, transport cost, and distinct trade-year history;
-- `src/households.js` — eligible etxe founders, marriage-value calculation, static wife candidates, resource payment, and opening a completed etxe with a founding couple;
+- `src/livestock.js` — explicit sheep records, age/life-stage derivation, breeding-pair checks, yearly aging, additions/removals, slaughter yields, and synchronization of the aggregate livestock count;
+- `src/simulation.js` — deterministic seasonal economy, livestock lifecycle orchestration, demography, food-shortage pressure, construction, occupation restoration, and movement;
+- `src/commerce.js` — deterministic resource values, value-based trade quotes, partner production capability, geographic distance, transport cost, distinct trade-year history, and livestock transfers through the livestock domain helpers;
+- `src/households.js` — eligible etxe founders, marriage-value calculation, static wife candidates, resource payment, livestock payment through domain helpers, and opening a completed etxe with a founding couple;
 - `src/map.js` — Leaflet-only rendering and map interaction;
 - `src/ui.js` — DOM rendering for setup, family, build, resources, and summaries;
 - `src/main.js` — application orchestration;
-- `tests/` — deterministic simulation tests.
+- `tests/` — deterministic simulation tests, including explicit livestock lifecycle coverage.
 
 The simulation module does not import Leaflet or browser DOM APIs. Campaign/scenario data remains separate from simulation logic.
 
@@ -352,7 +387,7 @@ The simulation module does not import Leaflet or browser DOM APIs. Campaign/scen
 - `activities` identifying map coordinates and worker counts for productive assets/projects worked during that season;
 - the existing `messages` list for results that do not map cleanly to a single resource or location.
 
-The UI renders this without altering simulation state: signed resource deltas in the top bar, 👤 activity markers on the map, and a compact non-blocking notification strip. The notification strip filters out routine economic messages (production, consumption, sowing/tending/harvest, and ordinary construction progress) because those are already visible through resource deltas and activity markers. It is reserved for notable events and warnings such as births, deaths, shortages, work-age transitions, and completed projects. Manual and automatic season passage use the same result object. The old blocking summary modal is no longer part of the normal season loop.
+The UI renders this without altering simulation state: signed resource deltas in the top bar, 👤 activity markers on the map, and a compact non-blocking notification strip. The notification strip filters out routine economic messages (production, consumption, sowing/tending/harvest, and ordinary construction progress) because those are already visible through resource deltas and activity markers. It is reserved for notable events and warnings such as births, deaths, shortages, work-age transitions, livestock births/age transitions, and completed projects. Manual and automatic season passage use the same result object. The old blocking summary modal is no longer part of the normal season loop.
 
 ### Real-time season clock
 
@@ -370,7 +405,7 @@ Save data should be versioned JSON and include:
 - campaign ID/version
 - simulation date
 - random seed/state
-- world/entity state
+- world/entity state, including explicit animal records
 - player decisions/overrides
 - event/history log where needed
 
@@ -392,6 +427,8 @@ A starting scenario is data, not bespoke code. Each scenario defines:
 - initial construction/development options.
 
 The player selects exactly one starting family when beginning a game. Other starting families are not instantiated.
+
+Starting scenarios currently provide only an aggregate starting livestock count. `createGame` deterministically expands that count into explicit prototype sheep records without consuming RNG state, so identical scenarios still begin identically and existing scenario content remains compact. Species/age/sex distributions should move into campaign data when historically calibrated livestock content is introduced.
 
 ### Builder occupation restoration
 
@@ -450,7 +487,7 @@ Commerce is intentionally shallow:
 - successful trades record distinct calendar years per partner family;
 - the contact has no simulated inventory, labour, demography, preferences, or price response.
 
-The trade calculation lives in `src/commerce.js`, outside Leaflet/UI code. The map only displays partner locations and the UI only submits trade choices.
+The trade calculation lives in `src/commerce.js`, outside Leaflet/UI code. The map only displays partner locations and the UI only submits trade choices. Livestock trades delegate animal creation/removal to `src/livestock.js` so the trade abstraction cannot desynchronize explicit animal state.
 
 This is an explicit MVP-0 exception to the otherwise single-family world: other families exist as fixed external economic endpoints, not autonomous household simulations.
 
@@ -476,6 +513,8 @@ The wife payment uses the same resource-value system as commerce:
 - minimum required value 3;
 - payment rounds upward to whole units of the chosen resource.
 
+If livestock is used as payment, the household layer removes explicit animals through the livestock domain helper rather than decrementing only the aggregate number.
+
 On success, the simulation deducts payment, moves the man into the residence, creates the incoming woman as a persistent person, links the spouses, records both head IDs on the residence, marks it opened, and renames it from the two heads' surnames. New opened head couples participate in the same per-residence birth logic as the original household.
 
 ### Controlled family and etxeak
@@ -499,9 +538,9 @@ The current engine implements this resolution in `src/simulation.js`. Each turn 
 1. season opens;
 2. persistent occupations generate suggested work assignments;
 3. player may override assignments and choose construction/development;
-4. production and project progress resolve;
+4. production and project progress resolve, including spring livestock reproduction where eligible;
 5. consumption/storage resolve;
-6. aging, births/deaths, and simple family changes resolve;
+6. at Winter year-end, livestock ages and then human aging/births/deaths resolve;
 7. movement between the family's etxeak resolves;
 8. season summary is shown.
 
@@ -540,7 +579,7 @@ The first playable version needs only:
 - **Season planning** — suggested labour plus player overrides.
 - **Build/develop controls** — create/expand fields, dwellings, and other enabled assets.
 - **Move people** — reassign eligible family members to another family etxe.
-- **Season summary** — outputs, consumption, population changes, project progress.
+- **Season summary** — outputs, consumption, population changes, project progress, and notable livestock lifecycle events.
 - **Commerce mode** — reveal static external families, inspect distance/production, and execute value-based trades.
 - **Open-etxe flow** — choose an eligible male founder, reuse the external-family zoom to choose a wife family, inspect discounted marriage value, pay, and establish the founding couple.
 
