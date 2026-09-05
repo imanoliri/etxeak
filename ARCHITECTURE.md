@@ -164,6 +164,8 @@ A Place can represent:
 
 Places can have coordinates and connections/distances. Access and control are modeled through ownership, customary rights, leases, kinship, obligations, or other campaign-specific mechanisms.
 
+MVP-0 mine eligibility uses repository-owned rocky-terrain areas from campaign data. The simulation tests a proposed coordinate against those configured areas; it never infers buildable terrain from OpenTopoMap or OpenStreetMap tiles. Altitude is not a separate hard constraint because a suitable exposed deposit can occur on a valley side as well as in high mountains. During placement, the map renders eligible rocky areas in translucent green and non-rocky terrain in translucent red, but remains a rendering layer rather than the source of truth.
+
 ### Productive asset
 
 Production happens through explicit assets rather than generic income.
@@ -438,6 +440,12 @@ Builder is treated as a temporary assignment when it replaces another occupation
 - when the final active construction/land-development project completes, Builders automatically return to that remembered occupation;
 - a Builder without remembered work falls back to a sensible nearby non-construction occupation;
 - occupation restoration happens in simulation state, not UI state.
+
+### Mine construction
+
+Mine establishment uses the generic project lifecycle. Starting a mine deducts 10 wood and 10 stone, records a 10-work project, and requires both a location within 1.5 km of an existing etxe and a coordinate inside configured rocky terrain. Completion replaces the project with an explicit mine asset attached to the nearest etxe. Subsequent stone output uses the existing spatial Miner allocation; the mine does not produce by itself.
+
+Rocky-terrain areas are campaign geography in `src/scenarios.js`. `src/simulation.js` owns placement validation and completion, while `src/map.js` only visualizes eligible areas during placement.
 
 ### Food shortages
 

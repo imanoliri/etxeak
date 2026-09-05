@@ -13,6 +13,7 @@ import {
   getCurrentSeason,
   getResidencePopulation,
   hasResidenceCapacity,
+  isBuildTerrainEligible,
   movePerson,
   setOccupation,
   startProject
@@ -75,6 +76,62 @@ test("field placement must be near an existing etxe", () => {
   const state = createGame(STARTING_SCENARIOS[0]);
   const result = startProject(state, "field", [42.9, -2.35]);
   assert.equal(result.ok, false);
+});
+
+test("mine projects require rocky terrain and charge 10 wood and 10 stone", () => {
+  const state = createGame(STARTING_SCENARIOS[1]);
+  state.stores.wood = 20;
+  state.stores.stone = 20;
+
+  const result = startProject(state, "mine", [43.3042, -1.8535]);
+
+  assert.equal(result.ok, true);
+  assert.equal(result.project.workRequired, 10);
+  assert.equal(state.stores.wood, 10);
+  assert.equal(state.stores.stone, 10);
+  assert.equal(isBuildTerrainEligible("mine", result.project.coords), true);
+});
+
+test("mine projects are rejected outside rocky terrain without charging resources", () => {
+  const state = createGame(STARTING_SCENARIOS[0]);
+  state.stores.wood = 20;
+  state.stores.stone = 20;
+
+  const result = startProject(state, "mine", [43.2641, -1.9748]);
+
+  assert.equal(result.ok, false);
+  assert.match(result.message, /rocky terrain/i);
+  assert.equal(state.stores.wood, 20);
+  assert.equal(state.stores.stone, 20);
+});
+
+test("completed mine projects create productive mine assets", () => {
+  const state = createGame(STARTING_SCENARIOS[1]);
+  state.stores.wood = 20;
+  state.stores.stone = 20;
+  const builder = state.people.find((person) => person.alive && person.age >= 12);
+  setOccupation(state, builder.id, "Builder");
+
+  const result = startProject(state, "mine", [43.3042, -1.8535]);
+  assert.equal(result.ok, true);
+  result.project.workRequired = 1;
+  advanceSeason(state);
+
+  assert.ok(state.assets.some((asset) => asset.type === "mine" && asset.coords[0] === 43.3042));
+  assert.equal(state.projects.length, 0);
+});
+
+test("the Hernani family must expand before reaching mine terrain", () => {
+  const state = createGame(STARTING_SCENARIOS[0]);
+  state.stores.wood = 20;
+  state.stores.stone = 20;
+
+  const result = startProject(state, "mine", [43.245, -1.94]);
+
+  assert.equal(result.ok, false);
+  assert.match(result.message, /within 1.5 km/i);
+  assert.equal(state.stores.wood, 20);
+  assert.equal(state.stores.stone, 20);
 });
 
 

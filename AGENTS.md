@@ -12,8 +12,9 @@ Read in full:
 2. `ARCHITECTURE.md`
 3. `FEATURES.md`
 4. `FUTURE.md`
-5. `AGENTS.md`
-6. relevant source and test files
+5. `ROADMAP.md`
+6. `AGENTS.md`
+7. relevant source and test files
 
 Do not rely on memory of an earlier version of these files: re-read them from the branch being changed. Do not infer current functionality from `FUTURE.md`.
 
@@ -25,6 +26,7 @@ If the requested change conflicts with the documented architecture or scope, res
 - **ARCHITECTURE.md** — authoritative technical/domain architecture and simulation boundaries.
 - **FEATURES.md** — current MVP design baseline and, once code exists, implemented/current-scope features.
 - **FUTURE.md** — ideas intentionally deferred beyond current scope.
+- **ROADMAP.md** — ordered development milestones and dependencies; it should link current work to deferred systems without redefining implemented behavior.
 - **AGENTS.md** — repository working rules.
 
 Keep the documentation synchronized with implementation throughout the task, not as a cleanup step at the end:
@@ -33,6 +35,7 @@ Keep the documentation synchronized with implementation throughout the task, not
 - update `ARCHITECTURE.md` whenever rules, state, boundaries, or system responsibilities change;
 - update `README.md` when player-visible behavior or the current playable slice materially changes;
 - move genuinely deferred ideas to `FUTURE.md` rather than leaving them mixed into current scope;
+- update `ROADMAP.md` when a requested feature changes the intended order or dependencies of future milestones;
 - update `AGENTS.md` when a recurring development rule or repository workflow should apply to future agents.
 
 Documentation and code for the same behavior belong in the same PR.

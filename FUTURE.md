@@ -115,6 +115,23 @@ MVP-0 has only static value-based commerce with a 5× received-value premium. Fu
 - maize and later early-modern agricultural transformation
 - demographic carrying-capacity changes
 
+## Geographic terrain and construction suitability
+
+Replace the MVP-0's small manually configured build zones with a campaign-owned geographic suitability layer. It should combine real or historically reconstructed spatial data where practical, while remaining deterministic and independent of the visual basemap.
+
+Potential inputs include:
+
+- elevation and slope;
+- terrain and land-cover type, such as valley floor, hillside, forest, pasture, wetland, riverbank, and exposed rock;
+- geology, mineral deposits, and quarryable stone;
+- soil type, fertility, and drainage;
+- rivers, flood risk, coastlines, routes, and settlement access;
+- historical land use, ownership, customary rights, and protected or unavailable land.
+
+These properties should determine or modify what can be built and developed at a location. For example, mines and quarries require suitable geology or deposits; fields require workable soil and slope; mills require appropriate water access; pastures depend on land cover and carrying capacity; ports require suitable coastline; and dwellings, roads, bridges, forests, and workshops each have their own constraints and trade-offs.
+
+The game should expose suitability clearly before placement, including the reasons a location is valid, invalid, costly, or less productive. Map tiles remain presentation only: campaign data and simulation rules are the authoritative source of terrain eligibility.
+
 ## Technology and knowledge diffusion
 
 No conventional research tree.

@@ -7,6 +7,16 @@ export const OCCUPATIONS = [
   "Unassigned"
 ];
 
+// Repository-owned campaign geography. These prototype rocky outcrops make
+// mine placement deterministic instead of trying to derive gameplay terrain
+// from whichever presentation-only map tiles happen to be visible.
+export const ROCKY_TERRAIN_AREAS = [
+  { id: "rock-hernani", name: "Upper Urumea rocky outcrop", center: [43.245, -1.94], radiusKm: 0.55 },
+  { id: "rock-oiartzun", name: "Oiartzun rocky outcrop", center: [43.3042, -1.8535], radiusKm: 0.55 },
+  { id: "rock-goizueta", name: "Goizueta rocky outcrop", center: [43.177, -1.8585], radiusKm: 0.55 },
+  { id: "rock-tolosa", name: "Tolosa rocky outcrop", center: [43.128, -2.087], radiusKm: 0.55 }
+];
+
 const people = (entries) => {
   const records = entries.map(([id, givenName, surname, sex, age, role, occupation]) => ({
     id,

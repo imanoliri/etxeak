@@ -11,11 +11,13 @@ import {
 } from "./simulation.js";
 import {
   clearCommercePartners,
+  clearPlacementTerrain,
   clearScenarioPreviews,
   createMap,
   focusOn,
   renderGameState,
   showCommercePartners,
+  showPlacementTerrain,
   showScenarioPreviews
 } from "./map.js";
 import {
@@ -206,11 +208,13 @@ function handleConfirmMarriage(
 function beginPlacement(type) {
   clearExternalFamilyMode();
   placementType = type;
+  showPlacementTerrain(mapContext, type);
   showPlacement(type);
 }
 
 function cancelPlacement() {
   placementType = null;
+  clearPlacementTerrain(mapContext);
   hidePlacement();
 }
 
@@ -225,6 +229,7 @@ function handleMapClick(coords) {
 
   const label = result.project.name;
   placementType = null;
+  clearPlacementTerrain(mapContext);
   hidePlacement();
   refresh();
   openBuildPanel(state, beginPlacement);
