@@ -30,8 +30,6 @@ These are comparatively contained systems that could enrich the one-house simula
 - **Hunting and foraging:** seasonal collection of game, fish, berries, mushrooms, nuts, firewood, and other wild resources, especially during shortages.
 - **Food preservation and spoilage:** grain stores, smoked or salted meat, cheese, cider/wine, and preservation choices that make slaughter and harvest timing matter.
 - **Household needs panel:** a compact view of food, fuel, shelter, clothing, and labour pressures explaining why the household is prospering or struggling.
-- **Animal reproduction:** plausible breeding and seasonally concentrated births for cattle, sheep, pigs, and goats.
-- **Animal age and slaughter:** newborn, juvenile, adult, and old life stages, with household choices about breeding, keeping, selling, or slaughtering animals.
 - **Construction queue:** several simultaneous or ordered building and land-development projects that consume workers, materials, and seasonal time.
 - **Occupational progression:** repeated work as a farmer, shepherd, carpenter, smith, miner, fisher, or other craft gradually improves skill and output.
 - **Annual harvest summary:** an autumn or year-end account of harvest quality, orchard yields, livestock births and deaths, slaughter, and important store changes.

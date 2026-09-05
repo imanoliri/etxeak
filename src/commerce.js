@@ -1,4 +1,5 @@
 import { findNearestResidence, haversineKm } from "./simulation.js";
+import { ensureLivestockState, receiveLivestock, removeLivestock } from "./livestock.js";
 
 export const TRADE_DISTANCE_STEP_KM = 50;
 export const TRADE_BATCH_MAX = 8;
@@ -135,6 +136,7 @@ export function tradeWithFamily(
   receiveResource,
   batchCount = 1
 ) {
+  ensureLivestockState(state);
   const quote = getTradeQuote(
     state,
     partnerScenario,
@@ -181,10 +183,22 @@ export function tradeWithFamily(
     }
   }
 
-  state.stores[giveResource] -= quote.giveAmount;
+  if (giveResource === "livestock") {
+    const removed = removeLivestock(state, quote.giveAmount);
+    if (removed.length !== quote.giveAmount) {
+      return { ok: false, message: "Not enough livestock for this trade." };
+    }
+  } else {
+    state.stores[giveResource] -= quote.giveAmount;
+  }
   state.stores.food -= quote.transportFoodCost;
-  state.stores[receiveResource] =
-    (state.stores[receiveResource] ?? 0) + quote.receiveAmount;
+
+  if (receiveResource === "livestock") {
+    receiveLivestock(state, quote.receiveAmount);
+  } else {
+    state.stores[receiveResource] =
+      (state.stores[receiveResource] ?? 0) + quote.receiveAmount;
+  }
 
   recordTradeYear(state, partnerScenario.id);
 
