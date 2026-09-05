@@ -176,6 +176,7 @@ The fuller **Urumea MVP** comes later and adds other households, kinship between
 - [ARCHITECTURE.md](ARCHITECTURE.md) — simulation architecture and domain model
 - [FEATURES.md](FEATURES.md) — first-MVP design baseline
 - [FUTURE.md](FUTURE.md) — deliberately deferred ideas
+- [ROADMAP.md](ROADMAP.md) — development sequence from MVP-0 toward the fuller simulation
 - [AGENTS.md](AGENTS.md) — instructions for coding agents
 
 ## Long-term scope
