@@ -105,31 +105,40 @@ export function createMap(onMapClick) {
 
 export function showPlacementTerrain(mapContext, type, state) {
   mapContext.placementLayer.clearLayers();
-  const rows = 48;
-  const columns = 48;
-  const latStep = (CAMPAIGN_BOUNDS.north - CAMPAIGN_BOUNDS.south) / rows;
-  const lonStep = (CAMPAIGN_BOUNDS.east - CAMPAIGN_BOUNDS.west) / columns;
+  window.L.rectangle(
+    [[CAMPAIGN_BOUNDS.south, CAMPAIGN_BOUNDS.west], [CAMPAIGN_BOUNDS.north, CAMPAIGN_BOUNDS.east]],
+    { stroke: false, fillColor: "#b5433f", fillOpacity: 0.16, interactive: false }
+  ).addTo(mapContext.placementLayer);
 
-  for (let row = 0; row < rows; row += 1) {
-    for (let column = 0; column < columns; column += 1) {
-      const bounds = [
-        [CAMPAIGN_BOUNDS.south + row * latStep, CAMPAIGN_BOUNDS.west + column * lonStep],
-        [CAMPAIGN_BOUNDS.south + (row + 1) * latStep, CAMPAIGN_BOUNDS.west + (column + 1) * lonStep]
-      ];
-      const coords = [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2];
-      const terrain = evaluateBuildSite(type, coords);
-      const inReach = state?.residences?.some((residence) => window.L.latLng(coords).distanceTo(window.L.latLng(residence.coords)) <= ETXE_WORK_RADIUS_KM * 1000) ?? true;
-      const valid = terrain.valid && inReach;
-      const land = getGeographyAt(coords);
-      const rectangle = window.L.rectangle(bounds, {
-        stroke: false,
-        fillColor: valid ? "#4b9b5d" : "#b5433f",
-        fillOpacity: valid ? 0.28 : 0.16,
-        interactive: true
-      });
-      const reason = !terrain.valid ? terrain.reason : !inReach ? `Outside the ${ETXE_WORK_RADIUS_KM} km work radius.` : terrain.reason;
-      rectangle.bindTooltip(`${valid ? "Suitable" : "Unsuitable"} · ${land.terrain} · ${land.elevationM ?? "?"} m · slope ${land.slopePercent ?? "?"}%<br>${reason}`);
-      rectangle.addTo(mapContext.placementLayer);
+  const latitudeStep = 0.002;
+  const longitudeStep = 0.0025;
+  const renderedCells = new Set();
+
+  for (const residence of state?.residences ?? []) {
+    const latitudeRange = ETXE_WORK_RADIUS_KM / 110.574;
+    const longitudeRange = ETXE_WORK_RADIUS_KM / (111.32 * Math.cos((residence.coords[0] * Math.PI) / 180));
+    for (let latitude = residence.coords[0] - latitudeRange; latitude <= residence.coords[0] + latitudeRange; latitude += latitudeStep) {
+      for (let longitude = residence.coords[1] - longitudeRange; longitude <= residence.coords[1] + longitudeRange; longitude += longitudeStep) {
+        const coords = [latitude + latitudeStep / 2, longitude + longitudeStep / 2];
+        if (window.L.latLng(coords).distanceTo(window.L.latLng(residence.coords)) > ETXE_WORK_RADIUS_KM * 1000) continue;
+        const cellKey = `${Math.round(latitude / latitudeStep)},${Math.round(longitude / longitudeStep)}`;
+        if (renderedCells.has(cellKey)) continue;
+        renderedCells.add(cellKey);
+
+        const site = evaluateBuildSite(type, coords);
+        const land = site.geography ?? getGeographyAt(coords);
+        const rectangle = window.L.rectangle(
+          [[latitude, longitude], [latitude + latitudeStep, longitude + longitudeStep]],
+          {
+            stroke: false,
+            fillColor: site.valid ? "#4b9b5d" : "#b5433f",
+            fillOpacity: site.valid ? 0.34 : 0.24,
+            interactive: true
+          }
+        );
+        rectangle.bindTooltip(`${site.valid ? "Suitable" : "Unsuitable"} · ${land.terrain} · ${land.elevationM ?? "?"} m · slope ${land.slopePercent ?? "?"}%<br>${site.reason}`);
+        rectangle.addTo(mapContext.placementLayer);
+      }
     }
   }
 }
