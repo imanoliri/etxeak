@@ -129,7 +129,7 @@ The current MVP-0 branch already supports:
 - sowing, tending, harvesting, herding, forestry, mining, seasonal consumption, autumn slaughter, and visible failed-sowing warnings only for missing seed reserves; unavailable Farmers leave fields unworked without a failure notification;
 - explicit sheep with persistent age and sex, spring births requiring active herding and a breeding pair, yearly aging through newborn/juvenile/adult/old stages, and age-dependent autumn slaughter yields;
 - deterministic yearly aging, simple births, and deaths using placeholder prototype rates; yearly food shortages now raise mortality risk and reduce the chance of births;
-- starting multi-season projects for a new etxe or a new field;
+- starting multi-season projects for a new etxe, field, or mine; mines cost 10 wood and 10 stone, require 10 Builder work, and can only be established on configured rocky terrain;
 - completing construction through Builder labour, with builders automatically returning to their remembered previous occupation when no construction projects remain;
 - moving family members between completed etxeak;
 - opening Commerce mode, automatically zooming out to the other family locations, and trading with them using equal-value barter (food 1, wood 2, stone 3, livestock 3), upward rounding of whole payment units, and a separate distance food cost;

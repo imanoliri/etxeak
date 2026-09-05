@@ -1,4 +1,4 @@
-import { OCCUPATIONS } from "./scenarios.js";
+import { OCCUPATIONS, ROCKY_TERRAIN_AREAS } from "./scenarios.js";
 import {
   addNewbornLivestock,
   ageLivestockOneYear,
@@ -31,6 +31,15 @@ export const BUILD_TYPES = {
     placement: "near-etxe",
     maxDistanceKm: ETXE_WORK_RADIUS_KM,
     resultType: "field"
+  },
+  mine: {
+    label: "Establish mine",
+    cost: { wood: 10, stone: 10 },
+    workRequired: 10,
+    placement: "near-etxe",
+    maxDistanceKm: ETXE_WORK_RADIUS_KM,
+    requiredTerrain: "rocky",
+    resultType: "mine"
   }
 };
 
@@ -268,6 +277,13 @@ export function startProject(state, type, coords) {
     return { ok: false, message: formatMissingResources(state, definition.cost) };
   }
 
+  if (!isBuildTerrainEligible(type, coords)) {
+    return {
+      ok: false,
+      message: `${definition.label} can only be built on rocky terrain. Choose one of the highlighted rocky areas.`
+    };
+  }
+
   let residenceId = null;
   if (definition.placement === "near-etxe") {
     const nearest = findNearestResidence(state, coords);
@@ -277,7 +293,7 @@ export function startProject(state, type, coords) {
         message:
           type === "field"
             ? `A field must be within ${definition.maxDistanceKm} km of one of your etxeak.`
-            : `A new etxe must be within ${definition.maxDistanceKm} km of an existing etxe so builders can reach it.`
+            : `${definition.label} must be within ${definition.maxDistanceKm} km of an existing etxe so builders can reach it.`
       };
     }
     residenceId = nearest.residence.id;
@@ -301,6 +317,15 @@ export function startProject(state, type, coords) {
 
   state.projects.push(project);
   return { ok: true, project };
+}
+
+export function isBuildTerrainEligible(type, coords) {
+  const requiredTerrain = BUILD_TYPES[type]?.requiredTerrain;
+  if (!requiredTerrain) return true;
+  if (requiredTerrain !== "rocky") return false;
+  return ROCKY_TERRAIN_AREAS.some(
+    (area) => haversineKm(coords, area.center) <= area.radiusKm
+  );
 }
 
 export function advanceSeason(state) {
@@ -611,6 +636,19 @@ function completeProject(state, project, messages) {
     };
     state.assets.push(asset);
     messages.push(`${asset.name} was cleared and is ready for the next sowing season.`);
+  }
+
+  if (project.type === "mine") {
+    const asset = {
+      id: `a${state.counters.asset++}`,
+      type: "mine",
+      name: `Mine ${state.counters.asset - 1}`,
+      coords: [...project.coords],
+      residenceId: project.residenceId,
+      state: {}
+    };
+    state.assets.push(asset);
+    messages.push(`${asset.name} was established and is ready for miners.`);
   }
 
   state.projects = state.projects.filter((entry) => entry.id !== project.id);

@@ -490,6 +490,7 @@ export function openBuildPanel(state, onStartPlacement) {
       <h3>New project</h3>
       ${buildButton("etxe", state)}
       ${buildButton("field", state)}
+      ${buildButton("mine", state)}
       <p class="muted">Projects only progress when at least one working-age family member has the Builder occupation.</p>
     </section>
     <section class="panel-section">
@@ -711,7 +712,9 @@ export function showPlacement(type) {
   els.placementText.textContent =
     type === "field"
       ? `Tap within ${ETXE_WORK_RADIUS_KM} km of one of your etxeak to clear a field.`
-      : `Tap within ${ETXE_WORK_RADIUS_KM} km of an existing etxe so builders can reach the site.`;
+      : type === "mine"
+        ? `Tap inside a highlighted rocky area within ${ETXE_WORK_RADIUS_KM} km of an etxe.`
+        : `Tap within ${ETXE_WORK_RADIUS_KM} km of an existing etxe so builders can reach the site.`;
   els.placementBanner.classList.remove("is-hidden");
   closePanel();
 }

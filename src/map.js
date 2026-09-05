@@ -1,5 +1,6 @@
 import { ETXE_WORK_RADIUS_KM, getResidenceCapacity, getResidencePopulation } from "./simulation.js";
 import { getScenarioProducedResources, getTradeDistanceKm, getResourceLabel } from "./commerce.js";
+import { ROCKY_TERRAIN_AREAS } from "./scenarios.js";
 
 const PLAYABLE_BOUNDS = window.L.latLngBounds(
   [42.88, -2.42],
@@ -97,8 +98,64 @@ export function createMap(onMapClick) {
   const gameLayer = window.L.layerGroup().addTo(map);
   const previewLayer = window.L.layerGroup().addTo(map);
   const commerceLayer = window.L.layerGroup().addTo(map);
+  const placementLayer = window.L.layerGroup().addTo(map);
 
-  return { map, gameLayer, previewLayer, commerceLayer };
+  return { map, gameLayer, previewLayer, commerceLayer, placementLayer };
+}
+
+export function showPlacementTerrain(mapContext, type) {
+  mapContext.placementLayer.clearLayers();
+  if (type !== "mine") return;
+
+  const outerBoundary = [
+    [PLAYABLE_BOUNDS.getSouth(), PLAYABLE_BOUNDS.getWest()],
+    [PLAYABLE_BOUNDS.getNorth(), PLAYABLE_BOUNDS.getWest()],
+    [PLAYABLE_BOUNDS.getNorth(), PLAYABLE_BOUNDS.getEast()],
+    [PLAYABLE_BOUNDS.getSouth(), PLAYABLE_BOUNDS.getEast()]
+  ];
+  const rockyHoles = ROCKY_TERRAIN_AREAS.map((area) =>
+    circleBoundary(area.center, area.radiusKm)
+  );
+
+  window.L.polygon([outerBoundary, ...rockyHoles], {
+    stroke: false,
+    fillColor: "#b5433f",
+    fillOpacity: 0.2,
+    fillRule: "evenodd",
+    interactive: false
+  }).addTo(mapContext.placementLayer);
+
+  ROCKY_TERRAIN_AREAS.forEach((area) => {
+    const circle = window.L.circle(area.center, {
+      radius: area.radiusKm * 1000,
+      color: "#2f7441",
+      weight: 2,
+      opacity: 0.9,
+      fillColor: "#4b9b5d",
+      fillOpacity: 0.3,
+      dashArray: "6 5",
+      interactive: false
+    });
+    circle.bindTooltip(`${area.name} · rocky terrain`, { direction: "top" });
+    circle.addTo(mapContext.placementLayer);
+  });
+}
+
+function circleBoundary([latitude, longitude], radiusKm, points = 64) {
+  const latitudeRadius = radiusKm / 110.574;
+  const longitudeRadius = radiusKm / (111.32 * Math.cos((latitude * Math.PI) / 180));
+
+  return Array.from({ length: points }, (_, index) => {
+    const angle = (index / points) * Math.PI * 2;
+    return [
+      latitude + Math.sin(angle) * latitudeRadius,
+      longitude + Math.cos(angle) * longitudeRadius
+    ];
+  });
+}
+
+export function clearPlacementTerrain(mapContext) {
+  mapContext.placementLayer.clearLayers();
 }
 
 export function showScenarioPreviews(mapContext, scenarios, onChoose) {

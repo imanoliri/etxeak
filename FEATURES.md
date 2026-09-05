@@ -28,7 +28,7 @@ Implemented on the current MVP-0 branch:
 - explicit sheep records with age and sex, spring reproduction, yearly aging, age classes, and age-dependent slaughter yields;
 - deterministic annual aging, simple births, and deaths;
 - resource HUD and seasonal summaries;
-- construction projects for new etxeak and fields;
+- construction projects for new etxeak, fields, and rocky-terrain mines;
 - Builder labour progressing projects over multiple seasons, with automatic return to the worker's previous occupation when no projects remain;
 - moving people between completed etxeak;
 - value-based commerce with the unchosen family locations, including map zoom-out, production-limited exports, distance food costs, and trade-year relationship tracking;
@@ -267,6 +267,17 @@ Examples:
 - improve enabled productive assets.
 
 Projects progress over seasons or years. They never complete instantly when purchased.
+
+The implemented mine project is a provisional MVP-0 development option:
+
+- it costs **10 wood and 10 stone** when started;
+- it requires **10 Builder work** over one or more seasons;
+- it must be placed inside a configured **rocky terrain** area and within the normal **1.5 km etxe work radius**;
+- mine placement shows a translucent suitability overlay: configured rocky areas are green and non-rocky terrain is red, while the underlying map remains visible;
+- completion creates a normal mine asset, which produces **2 stone per season** when reached by an available Miner.
+- Oiartzun, Goizueta, and Tolosa begin within working distance of a rocky area; the Hernani start must expand its etxe/work-radius chain before its nearest rocky area can be worked.
+
+Altitude is not an independent eligibility rule: the configured rock/deposit area is authoritative because suitable geology matters more than a universal elevation threshold. The rocky areas, costs, labour requirement, and output are prototype campaign/balance data rather than final historical claims.
 
 ## Map
 
