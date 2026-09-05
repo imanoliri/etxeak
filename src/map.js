@@ -1,6 +1,6 @@
 import { ETXE_WORK_RADIUS_KM, getResidenceCapacity, getResidencePopulation } from "./simulation.js";
 import { getScenarioProducedResources, getTradeDistanceKm, getResourceLabel } from "./commerce.js";
-import { ROCKY_TERRAIN_AREAS } from "./scenarios.js";
+import { CAMPAIGN_BOUNDS, evaluateBuildSite, getGeographyAt } from "./geography.js";
 
 const PLAYABLE_BOUNDS = window.L.latLngBounds(
   [42.88, -2.42],
@@ -103,55 +103,35 @@ export function createMap(onMapClick) {
   return { map, gameLayer, previewLayer, commerceLayer, placementLayer };
 }
 
-export function showPlacementTerrain(mapContext, type) {
+export function showPlacementTerrain(mapContext, type, state) {
   mapContext.placementLayer.clearLayers();
-  if (type !== "mine") return;
+  const rows = 48;
+  const columns = 48;
+  const latStep = (CAMPAIGN_BOUNDS.north - CAMPAIGN_BOUNDS.south) / rows;
+  const lonStep = (CAMPAIGN_BOUNDS.east - CAMPAIGN_BOUNDS.west) / columns;
 
-  const outerBoundary = [
-    [PLAYABLE_BOUNDS.getSouth(), PLAYABLE_BOUNDS.getWest()],
-    [PLAYABLE_BOUNDS.getNorth(), PLAYABLE_BOUNDS.getWest()],
-    [PLAYABLE_BOUNDS.getNorth(), PLAYABLE_BOUNDS.getEast()],
-    [PLAYABLE_BOUNDS.getSouth(), PLAYABLE_BOUNDS.getEast()]
-  ];
-  const rockyHoles = ROCKY_TERRAIN_AREAS.map((area) =>
-    circleBoundary(area.center, area.radiusKm)
-  );
-
-  window.L.polygon([outerBoundary, ...rockyHoles], {
-    stroke: false,
-    fillColor: "#b5433f",
-    fillOpacity: 0.2,
-    fillRule: "evenodd",
-    interactive: false
-  }).addTo(mapContext.placementLayer);
-
-  ROCKY_TERRAIN_AREAS.forEach((area) => {
-    const circle = window.L.circle(area.center, {
-      radius: area.radiusKm * 1000,
-      color: "#2f7441",
-      weight: 2,
-      opacity: 0.9,
-      fillColor: "#4b9b5d",
-      fillOpacity: 0.3,
-      dashArray: "6 5",
-      interactive: false
-    });
-    circle.bindTooltip(`${area.name} · rocky terrain`, { direction: "top" });
-    circle.addTo(mapContext.placementLayer);
-  });
-}
-
-function circleBoundary([latitude, longitude], radiusKm, points = 64) {
-  const latitudeRadius = radiusKm / 110.574;
-  const longitudeRadius = radiusKm / (111.32 * Math.cos((latitude * Math.PI) / 180));
-
-  return Array.from({ length: points }, (_, index) => {
-    const angle = (index / points) * Math.PI * 2;
-    return [
-      latitude + Math.sin(angle) * latitudeRadius,
-      longitude + Math.cos(angle) * longitudeRadius
-    ];
-  });
+  for (let row = 0; row < rows; row += 1) {
+    for (let column = 0; column < columns; column += 1) {
+      const bounds = [
+        [CAMPAIGN_BOUNDS.south + row * latStep, CAMPAIGN_BOUNDS.west + column * lonStep],
+        [CAMPAIGN_BOUNDS.south + (row + 1) * latStep, CAMPAIGN_BOUNDS.west + (column + 1) * lonStep]
+      ];
+      const coords = [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2];
+      const terrain = evaluateBuildSite(type, coords);
+      const inReach = state?.residences?.some((residence) => window.L.latLng(coords).distanceTo(window.L.latLng(residence.coords)) <= ETXE_WORK_RADIUS_KM * 1000) ?? true;
+      const valid = terrain.valid && inReach;
+      const land = getGeographyAt(coords);
+      const rectangle = window.L.rectangle(bounds, {
+        stroke: false,
+        fillColor: valid ? "#4b9b5d" : "#b5433f",
+        fillOpacity: valid ? 0.28 : 0.16,
+        interactive: true
+      });
+      const reason = !terrain.valid ? terrain.reason : !inReach ? `Outside the ${ETXE_WORK_RADIUS_KM} km work radius.` : terrain.reason;
+      rectangle.bindTooltip(`${valid ? "Suitable" : "Unsuitable"} · ${land.terrain} · ${land.elevationM ?? "?"} m · slope ${land.slopePercent ?? "?"}%<br>${reason}`);
+      rectangle.addTo(mapContext.placementLayer);
+    }
+  }
 }
 
 export function clearPlacementTerrain(mapContext) {

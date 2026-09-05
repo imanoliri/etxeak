@@ -208,7 +208,7 @@ function handleConfirmMarriage(
 function beginPlacement(type) {
   clearExternalFamilyMode();
   placementType = type;
-  showPlacementTerrain(mapContext, type);
+  showPlacementTerrain(mapContext, type, state);
   showPlacement(type);
 }
 

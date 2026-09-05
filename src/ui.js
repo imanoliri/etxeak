@@ -516,6 +516,7 @@ function buildButton(type, state) {
     <div class="asset-row">
       <div class="asset-head"><strong>${definition.label}</strong><span>${definition.workRequired} work</span></div>
       <span class="muted">Cost: ${cost}</span>
+      <span class="muted">${type === "field" ? "Needs drained, gently sloped valley land." : type === "mine" ? "Needs an exposed mineral deposit." : "Needs stable, drained ground with a manageable slope."}</span>
       <button type="button" data-build="${type}">Choose location</button>
     </div>
   `;

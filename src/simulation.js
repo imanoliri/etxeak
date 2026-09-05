@@ -1,4 +1,5 @@
-import { OCCUPATIONS, ROCKY_TERRAIN_AREAS } from "./scenarios.js";
+import { OCCUPATIONS } from "./scenarios.js";
+import { evaluateBuildSite } from "./geography.js";
 import {
   addNewbornLivestock,
   ageLivestockOneYear,
@@ -38,7 +39,6 @@ export const BUILD_TYPES = {
     workRequired: 10,
     placement: "near-etxe",
     maxDistanceKm: ETXE_WORK_RADIUS_KM,
-    requiredTerrain: "rocky",
     resultType: "mine"
   }
 };
@@ -277,10 +277,11 @@ export function startProject(state, type, coords) {
     return { ok: false, message: formatMissingResources(state, definition.cost) };
   }
 
-  if (!isBuildTerrainEligible(type, coords)) {
+  const site = evaluateBuildSite(type, coords);
+  if (!site.valid) {
     return {
       ok: false,
-      message: `${definition.label} can only be built on rocky terrain. Choose one of the highlighted rocky areas.`
+      message: `${site.reason} Choose a green highlighted area.`
     };
   }
 
@@ -320,12 +321,7 @@ export function startProject(state, type, coords) {
 }
 
 export function isBuildTerrainEligible(type, coords) {
-  const requiredTerrain = BUILD_TYPES[type]?.requiredTerrain;
-  if (!requiredTerrain) return true;
-  if (requiredTerrain !== "rocky") return false;
-  return ROCKY_TERRAIN_AREAS.some(
-    (area) => haversineKm(coords, area.center) <= area.radiusKm
-  );
+  return evaluateBuildSite(type, coords).valid;
 }
 
 export function advanceSeason(state) {

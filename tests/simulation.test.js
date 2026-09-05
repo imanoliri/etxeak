@@ -53,7 +53,7 @@ test("occupation changes are rejected for children below work age", () => {
 
 test("new etxe project completes closed and cannot accept residents until opened", () => {
   const state = createGame(STARTING_SCENARIOS[1]);
-  const result = startProject(state, "etxe", [43.301, -1.855]);
+  const result = startProject(state, "etxe", [43.294, -1.86]);
   assert.equal(result.ok, true);
 
   for (let i = 0; i < 4 && state.residences.length === 1; i += 1) {
