@@ -25,6 +25,7 @@ Implemented on the current MVP-0 branch:
 - seasonal field cycle: spring sowing, summer tending, autumn harvest;
 - pasture, forestry, and mining production;
 - family food consumption, food-shortage consequences, and autumn animal slaughter;
+- explicit sheep records with age and sex, spring reproduction, yearly aging, age classes, and age-dependent slaughter yields;
 - deterministic annual aging, simple births, and deaths;
 - resource HUD and seasonal summaries;
 - construction projects for new etxeak and fields;
@@ -59,12 +60,60 @@ Different activities matter in different seasons, including:
 - sowing/planting;
 - tending livestock and grazing;
 - harvest;
-- animal slaughter/preservation;
+- animal reproduction, aging, and slaughter;
 - woodland work;
 - construction and repairs;
 - winter consumption/maintenance.
 
 Assets only produce when they have the necessary workers, inputs, and seasonal conditions.
+
+## Livestock lifecycle
+
+Livestock is no longer only an undifferentiated resource count. The current prototype models the household's sheep as explicit animal records while keeping the aggregate **Animals** number available to the existing HUD, commerce, and household-value systems.
+
+Each living sheep has:
+
+- a stable animal ID;
+- sex;
+- age in whole years;
+- one derived life stage: **newborn**, **juvenile**, **adult**, or **old**.
+
+Current prototype thresholds are:
+
+- newborn: under 1 year;
+- juvenile: at least 1 and under 2 years;
+- adult: at least 2 and under 8 years;
+- old: 8 years or older.
+
+These thresholds are provisional gameplay values rather than a final historical/livestock model.
+
+### Reproduction
+
+- Reproduction is resolved in **Spring**.
+- At least one pasture must actually receive Herder labour that spring.
+- The flock must contain at least one breeding-age adult female and one breeding-age adult male.
+- Each worked pasture can produce at most one lamb that spring, capped by the number of breeding-age females.
+- New lambs begin at age 0 and receive a deterministic seeded sex assignment through the normal simulation RNG.
+- A pasture no longer creates livestock through an unconditional abstract `+1`; new livestock arises through this breeding state.
+
+### Aging
+
+- All living sheep age by one year at the end of Winter.
+- The simulation records notable transitions into breeding-age adulthood and old age in the season results/history.
+- Age is therefore persistent across years and directly affects breeding eligibility and slaughter value.
+
+### Slaughter
+
+- Slaughter remains an explicit **Autumn** action.
+- The simulation selects an older slaughterable animal first rather than deleting an anonymous livestock point.
+- If the flock currently has a breeding-age male/female pair, ordinary slaughter protects that pair where possible.
+- Newborn sheep are not slaughterable through this action.
+- Prototype food yields are age-sensitive: juvenile = **3 food**, adult = **5 food**, old = **4 food**.
+- These yields are provisional balance values and need historical calibration.
+
+### Commerce and household payments
+
+Because livestock is now explicit, giving livestock in commerce or as an etxe-founding marriage payment removes actual animal records. Receiving livestock through commerce creates explicit animals. The aggregate livestock total must always stay synchronized with the number of living animal records.
 
 ## Family and people
 
@@ -120,7 +169,7 @@ A completed etxe is only a building until a household is established there.
 2. Choose a living **working-age man** from the player's family who is unmarried and is not already head of another etxe.
 3. The map uses the same regional zoom-out as Commerce mode to show the other static family locations.
 4. Select the family the wife will come from.
-5. Pay the marriage value and open the etxe. The man moves there, the woman joins the player's genealogy, and both become heads of that etxe.
+5. Pay the marriage value and open the etxe. The man moves there, the woman joins the player's genealogy, and both become heads of the etxe.
 
 Marriage payment:
 
@@ -244,6 +293,8 @@ When a season resolves, its results are shown directly in the main game UI rathe
 - every location worked during the completed season receives a visible **👤** worker marker (with a count when multiple workers were applied);
 - the non-blocking season notification strip only shows **notable events and warnings**; routine production, consumption, sowing/tending/harvest, and construction-work progress are intentionally omitted because those outcomes are already represented by resource deltas and map activity markers.
 
+Livestock births and age-stage transitions are notable lifecycle events and therefore remain visible in seasonal feedback/history.
+
 The same feedback is used for manual and automatic season advancement.
 
 ## Explicit exclusions
@@ -270,7 +321,6 @@ The MVP succeeds if playing a single family is already interesting because the p
 **people + seasonal labour + resources + construction + geographic expansion**
 
 and can naturally grow from one etxe into several family-controlled etxeak.
-
 
 ## UI principles
 
