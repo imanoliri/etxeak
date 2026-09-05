@@ -1,4 +1,14 @@
 import { OCCUPATIONS } from "./scenarios.js";
+import {
+  addNewbornLivestock,
+  ageLivestockOneYear,
+  ensureLivestockState,
+  getLivestockLifeStage,
+  getLivestockSummary,
+  getSlaughterFoodYield,
+  hasBreedingPair,
+  removeLivestock
+} from "./livestock.js";
 
 export const SEASONS = ["Spring", "Summer", "Autumn", "Winter"];
 export const WORK_AGE = 12;
@@ -30,7 +40,7 @@ const clone = (value) => JSON.parse(JSON.stringify(value));
 
 export function createGame(scenario) {
   const state = {
-    version: 3,
+    version: 4,
     scenarioId: scenario.id,
     familyName: scenario.familyName,
     placeName: scenario.placeName,
@@ -62,6 +72,8 @@ export function createGame(scenario) {
       project: 1
     }
   };
+
+  ensureLivestockState(state);
 
   state.people
     .filter((person) => person.role === "head")
@@ -211,23 +223,38 @@ export function movePerson(state, personId, residenceId) {
   return true;
 }
 
+export function getAnimalAgeSummary(state) {
+  return getLivestockSummary(state);
+}
+
 export function slaughterAnimal(state) {
   if (getCurrentSeason(state) !== "Autumn") {
     return { ok: false, message: "Animals are only slaughtered through this action in autumn." };
   }
-  if (state.stores.livestock <= 1) {
-    return { ok: false, message: "Keep at least one animal as breeding stock." };
+
+  const removed = removeLivestock(state, 1, { protectBreedingPair: true });
+  if (removed.length !== 1) {
+    return { ok: false, message: "No slaughterable animal is available without losing the breeding pair." };
   }
 
-  state.stores.livestock -= 1;
-  state.stores.food += 5;
+  const animal = removed[0];
+  const stage = getLivestockLifeStage(animal);
+  const food = getSlaughterFoodYield(animal);
+  if (food <= 0) {
+    animal.alive = true;
+    ensureLivestockState(state);
+    return { ok: false, message: "Newborn animals are too young to slaughter." };
+  }
+
+  state.stores.food += food;
+  const message = `1 ${stage} sheep slaughtered: +${food} food.`;
   state.history.push({
     year: state.date.year,
     season: "Autumn",
-    text: "One animal was slaughtered, adding 5 food."
+    text: message
   });
 
-  return { ok: true, message: "1 animal slaughtered: +5 food." };
+  return { ok: true, message, animal, food };
 }
 
 export function canAfford(state, cost) {
@@ -288,6 +315,7 @@ export function advanceSeason(state) {
   resolveConsumption(state, messages);
 
   if (completedSeason === "Winter") {
+    resolveAnnualLivestockAging(state, messages);
     state.date.year += 1;
     state.date.seasonIndex = 0;
     resolveAnnualDemography(state, messages);
@@ -316,6 +344,7 @@ export function advanceSeason(state) {
 }
 
 function captureHudResources(state) {
+  ensureLivestockState(state);
   return {
     food: state.stores.food,
     wood: state.stores.wood,
@@ -329,6 +358,7 @@ function captureHudResources(state) {
 function resolveProduction(state, messages, activities) {
   const season = getCurrentSeason(state);
   const pools = createWorkerPools(state);
+  let workedPastures = 0;
 
   for (const asset of state.assets) {
     if (asset.type === "field") {
@@ -345,10 +375,8 @@ function resolveProduction(state, messages, activities) {
       const worker = takeWorkerNear(state, pools, asset.coords, "Herder");
       if (worker) {
         recordActivity(activities, asset, worker);
-        if (season === "Spring") {
-          state.stores.livestock += 1;
-          messages.push(`${asset.name}: livestock increased by 1.`);
-        } else if (season === "Summer") {
+        workedPastures += 1;
+        if (season === "Summer") {
           state.stores.food += 1;
           messages.push(`${asset.name}: +1 food from animal products.`);
         }
@@ -361,6 +389,37 @@ function resolveProduction(state, messages, activities) {
         messages.push(`${asset.name}: +2 stone.`);
       }
     }
+  }
+
+  if (season === "Spring" && workedPastures > 0) {
+    resolveLivestockBirths(state, workedPastures, messages);
+  }
+}
+
+function resolveLivestockBirths(state, workedPastures, messages) {
+  ensureLivestockState(state);
+  const adults = state.animals.filter(
+    (animal) => animal.alive && getLivestockLifeStage(animal) === "adult"
+  );
+  const adultFemales = adults.filter((animal) => animal.sex === "F").length;
+  if (!hasBreedingPair(state) || adultFemales === 0) return;
+
+  const births = Math.min(workedPastures, adultFemales);
+  for (let index = 0; index < births; index += 1) {
+    addNewbornLivestock(state, random(state) < 0.5 ? "F" : "M");
+  }
+  if (births > 0) {
+    messages.push(`${births} lamb${births === 1 ? " was" : "s were"} born in spring.`);
+  }
+}
+
+function resolveAnnualLivestockAging(state, messages) {
+  const result = ageLivestockOneYear(state);
+  if (result.matured > 0) {
+    messages.push(`${result.matured} sheep matured into breeding-age adults.`);
+  }
+  if (result.becameOld > 0) {
+    messages.push(`${result.becameOld} sheep entered old age.`);
   }
 }
 
