@@ -275,7 +275,7 @@ All three current construction types query the campaign geography layer before r
 - fields require drained, gently sloped valley land;
 - mines require rocky terrain within a historically documented mining district enabled for the campaign year;
 - all projects must also be within the normal 1.5 km etxe work radius;
-- placement shows a translucent green/red suitability grid, and hovering a cell reports its terrain, prototype elevation, slope, and rejection reason.
+- placement shows a translucent green/red suitability grid, and hovering a cell reports its terrain, prototype elevation, slope, and rejection reason; mine placement also outlines named historical districts beyond current working range so the player can plan expansion toward them.
 
 The implemented mine project is a provisional MVP-0 development option:
 

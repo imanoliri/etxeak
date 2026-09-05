@@ -1,6 +1,6 @@
 import { ETXE_WORK_RADIUS_KM, getResidenceCapacity, getResidencePopulation } from "./simulation.js";
 import { getScenarioProducedResources, getTradeDistanceKm, getResourceLabel } from "./commerce.js";
-import { CAMPAIGN_BOUNDS, evaluateBuildSite, getGeographyAt } from "./geography.js";
+import { CAMPAIGN_BOUNDS, MINERAL_DEPOSITS, evaluateBuildSite, getGeographyAt } from "./geography.js";
 
 const PLAYABLE_BOUNDS = window.L.latLngBounds(
   [42.88, -2.42],
@@ -139,6 +139,29 @@ export function showPlacementTerrain(mapContext, type, state) {
         rectangle.bindTooltip(`${site.valid ? "Suitable" : "Unsuitable"} · ${land.terrain} · ${land.elevationM ?? "?"} m · slope ${land.slopePercent ?? "?"}%<br>${site.reason}`);
         rectangle.addTo(mapContext.placementLayer);
       }
+    }
+  }
+
+  if (type === "mine") {
+    for (const deposit of MINERAL_DEPOSITS) {
+      if (state.date.year < deposit.activeFromYear || state.date.year > deposit.activeToYear) continue;
+      const inReach = state.residences.some(
+        (residence) => window.L.latLng(deposit.center).distanceTo(window.L.latLng(residence.coords)) <= ETXE_WORK_RADIUS_KM * 1000
+      );
+      const circle = window.L.circle(deposit.center, {
+        radius: deposit.radiusKm * 1000,
+        color: inReach ? "#2f7441" : "#8b5e20",
+        weight: 2,
+        opacity: 0.95,
+        fillColor: inReach ? "#4b9b5d" : "#b5433f",
+        fillOpacity: inReach ? 0.34 : 0.25,
+        dashArray: "6 5",
+        interactive: true
+      });
+      circle.bindTooltip(
+        `<strong>${deposit.name}</strong> · ${deposit.confidence} confidence<br>${deposit.evidence}<br>${inReach ? "Within working range." : `Outside the ${ETXE_WORK_RADIUS_KM} km work radius; expand toward this site.`}`
+      );
+      circle.addTo(mapContext.placementLayer);
     }
   }
 }
