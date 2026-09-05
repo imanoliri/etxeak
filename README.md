@@ -127,6 +127,7 @@ The current MVP-0 branch already supports:
 - changing working-age family members' occupations;
 - advancing automatically through Spring, Summer, Autumn, and Winter on a configurable timer (7 seconds by default), with pause/play and manual advance controls;
 - sowing, tending, harvesting, herding, forestry, mining, seasonal consumption, autumn slaughter, and visible failed-sowing warnings only for missing seed reserves; unavailable Farmers leave fields unworked without a failure notification;
+- explicit sheep with persistent age and sex, spring births requiring active herding and a breeding pair, yearly aging through newborn/juvenile/adult/old stages, and age-dependent autumn slaughter yields;
 - deterministic yearly aging, simple births, and deaths using placeholder prototype rates; yearly food shortages now raise mortality risk and reduce the chance of births;
 - starting multi-season projects for a new etxe or a new field;
 - completing construction through Builder labour, with builders automatically returning to their remembered previous occupation when no construction projects remain;
@@ -134,7 +135,9 @@ The current MVP-0 branch already supports:
 - opening Commerce mode, automatically zooming out to the other family locations, and trading with them using equal-value barter (food 1, wood 2, stone 3, livestock 3), upward rounding of whole payment units, and a separate distance food cost;
 - opening a newly built etxe by choosing an eligible working-age unmarried man, selecting a wife family on the same regional zoom-out, paying the marriage value, and moving the founding couple into the new etxe.
 
-The starting names, demographic rates, production yields, costs, and initial balances are **prototype gameplay values**, not final historical claims. They require historical calibration before the campaign is considered historically representative.
+Livestock is still shown as a compact aggregate **Animals** resource in the main HUD, but that number now mirrors explicit living animal records. Giving livestock in commerce or an etxe-founding marriage payment removes real animals; receiving livestock creates real animals.
+
+The starting names, demographic rates, production yields, livestock age thresholds/yields, costs, and initial balances are **prototype gameplay values**, not final historical claims. They require historical calibration before the campaign is considered historically representative.
 
 MVP-0 is about proving the household economy and expansion loop:
 
@@ -153,6 +156,7 @@ Included in MVP-0:
 9. **Real map locations** determining where buildings and productive assets exist.
 10. **Basic commerce** with static external family locations: resources exchange at equal intrinsic value (food = 1, wood = 2, stone = 3, livestock = 3). The total received value is divided by the chosen payment resource's value and rounded upward to whole units, so any mismatch is a loss to the player. Transport is separate and consumes 1 food per started 50 km.
 11. **Etxe founding marriage**: a completed etxe stays unopened until an eligible working-age unmarried man who is not already an etxe head is chosen and a wife is obtained from another static family. The marriage costs value 10 minus 1 for every distinct year the player has traded with that family, with a minimum value of 3; payment uses the same resource values and rounds upward.
+12. **Animal reproduction and age**: sheep are explicit animals with age/sex; worked spring pasture plus a breeding pair can produce lambs; all sheep age after Winter; slaughter operates on actual animals and produces age-dependent food.
 
 Explicitly excluded from MVP-0:
 
@@ -179,7 +183,6 @@ The fuller **Urumea MVP** comes later and adds other households, kinship between
 Later systems can include social obligations, tithes and rents, reputation and status, churches and monasteries, towns, mills, ironworking, trade, powerful lineages, political change, new crops, education, migration, overseas networks, and other historical transformations.
 
 Later campaigns can move to other Basque regions and periods while keeping the etxe, kinship, land, and generational legacy at the centre of play.
-
 
 ## Deployment
 
