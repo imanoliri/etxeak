@@ -82,8 +82,9 @@ test("mine projects require rocky terrain and charge 10 wood and 10 stone", () =
   const state = createGame(STARTING_SCENARIOS[1]);
   state.stores.wood = 20;
   state.stores.stone = 20;
+  state.residences[0].coords = [43.2788083, -1.8077961];
 
-  const result = startProject(state, "mine", [43.3042, -1.8535]);
+  const result = startProject(state, "mine", [43.2788083, -1.8077961]);
 
   assert.equal(result.ok, true);
   assert.equal(result.project.workRequired, 10);
@@ -109,24 +110,25 @@ test("completed mine projects create productive mine assets", () => {
   const state = createGame(STARTING_SCENARIOS[1]);
   state.stores.wood = 20;
   state.stores.stone = 20;
+  state.residences[0].coords = [43.2788083, -1.8077961];
   const builder = state.people.find((person) => person.alive && person.age >= 12);
   setOccupation(state, builder.id, "Builder");
 
-  const result = startProject(state, "mine", [43.3042, -1.8535]);
+  const result = startProject(state, "mine", [43.2788083, -1.8077961]);
   assert.equal(result.ok, true);
   result.project.workRequired = 1;
   advanceSeason(state);
 
-  assert.ok(state.assets.some((asset) => asset.type === "mine" && asset.coords[0] === 43.3042));
+  assert.ok(state.assets.some((asset) => asset.type === "mine" && asset.coords[0] === 43.2788083));
   assert.equal(state.projects.length, 0);
 });
 
-test("the Hernani family must expand before reaching mine terrain", () => {
+test("the Hernani family must expand before reaching a historical mining district", () => {
   const state = createGame(STARTING_SCENARIOS[0]);
   state.stores.wood = 20;
   state.stores.stone = 20;
 
-  const result = startProject(state, "mine", [43.245, -1.94]);
+  const result = startProject(state, "mine", [43.2788083, -1.8077961]);
 
   assert.equal(result.ok, false);
   assert.match(result.message, /within 1.5 km/i);

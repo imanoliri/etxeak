@@ -16,10 +16,37 @@ export const GEOGRAPHY_ZONES = [
 ];
 
 export const MINERAL_DEPOSITS = [
-  { id: "deposit-hernani", name: "Upper Urumea exposed deposit", center: [43.245, -1.94], radiusKm: 0.55 },
-  { id: "deposit-oiartzun", name: "Oiartzun exposed deposit", center: [43.3042, -1.8535], radiusKm: 0.55 },
-  { id: "deposit-goizueta", name: "Goizueta exposed deposit", center: [43.177, -1.8585], radiusKm: 0.55 },
-  { id: "deposit-tolosa", name: "Tolosa exposed deposit", center: [43.128, -2.087], radiusKm: 0.55 }
+  {
+    id: "arditurri-mining-district",
+    name: "Arditurri mining district",
+    center: [43.2788083, -1.8077961],
+    radiusKm: 0.4,
+    resources: ["iron", "silver-bearing lead"],
+    activeFromYear: 900,
+    activeToYear: 1500,
+    evidence: "Documented ancient mining district with medieval iron extraction and ironworks.",
+    confidence: "high",
+    sources: [
+      "https://tourism.euskadi.eus/en/cultural-heritage/arditurri-mines/webtur00-content/en/",
+      "https://zientzia.eus/artikuluak/arditurri-mendeetan-aberastasun-iturri/en/",
+      "https://www.arditurribideberdea.eus/en/arditurri-meatze-gunea/"
+    ]
+  },
+  {
+    id: "irugurutzeta-mining-district",
+    name: "Irugurutzeta mining district",
+    center: [43.3179905, -1.7722181],
+    radiusKm: 0.35,
+    resources: ["iron"],
+    activeFromYear: 900,
+    activeToYear: 1500,
+    evidence: "Aiako Harria mining locality; municipal history records mining through the Middle Ages.",
+    confidence: "medium",
+    sources: [
+      "https://www.irun.org/es/desarrollo-sostenible/espacios-naturales-protegidos/presentacion/coto-minero-de-irugurutzeta",
+      "https://ironrouteinthepyrenees.com/re/the-irugurutzeta-mining-reserve/"
+    ]
+  }
 ];
 
 export function haversineKm([lat1, lon1], [lat2, lon2]) {
@@ -43,11 +70,16 @@ function nearestZone(coords) {
     .sort((a, b) => a.distanceKm - b.distanceKm)[0];
 }
 
-export function getGeographyAt(coords) {
+export function getGeographyAt(coords, year = 1100) {
   if (!insideBounds(coords)) return { insideCampaign: false, terrain: "outside", slopePercent: null, elevationM: null, drainage: "unknown", mineralDeposit: null };
 
   const nearest = nearestZone(coords);
-  const deposit = MINERAL_DEPOSITS.find((entry) => haversineKm(coords, entry.center) <= entry.radiusKm) ?? null;
+  const deposit = MINERAL_DEPOSITS.find(
+    (entry) =>
+      year >= entry.activeFromYear &&
+      year <= entry.activeToYear &&
+      haversineKm(coords, entry.center) <= entry.radiusKm
+  ) ?? null;
   const radialRise = Math.max(0, nearest.distanceKm - nearest.zone.radiusKm * 0.35);
   const ripple = Math.abs(Math.sin(coords[0] * 173 + coords[1] * 97));
   const slopePercent = Math.round(Math.min(48, radialRise * 5.2 + ripple * 5));
@@ -63,7 +95,14 @@ export function getGeographyAt(coords) {
     slopePercent,
     elevationM,
     drainage,
-    mineralDeposit: deposit && { id: deposit.id, name: deposit.name }
+    mineralDeposit: deposit && {
+      id: deposit.id,
+      name: deposit.name,
+      resources: [...deposit.resources],
+      evidence: deposit.evidence,
+      confidence: deposit.confidence,
+      sources: [...deposit.sources]
+    }
   };
 }
 
@@ -82,8 +121,8 @@ const RULES = {
   }
 };
 
-export function evaluateBuildSite(type, coords) {
-  const geography = getGeographyAt(coords);
+export function evaluateBuildSite(type, coords, year = 1100) {
+  const geography = getGeographyAt(coords, year);
   if (!geography.insideCampaign) return { valid: false, reason: "The site is outside the campaign geography.", geography };
   const rule = RULES[type];
   if (!rule) return { valid: false, reason: "This project has no geographic placement rule.", geography };

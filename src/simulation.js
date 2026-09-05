@@ -277,7 +277,7 @@ export function startProject(state, type, coords) {
     return { ok: false, message: formatMissingResources(state, definition.cost) };
   }
 
-  const site = evaluateBuildSite(type, coords);
+  const site = evaluateBuildSite(type, coords, state.date.year);
   if (!site.valid) {
     return {
       ok: false,

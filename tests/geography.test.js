@@ -18,7 +18,7 @@ test("campaign geography exposes terrain, elevation, slope, and drainage", () =>
 });
 
 test("a mine requires an explicit mineral deposit", () => {
-  const deposit = evaluateBuildSite("mine", [43.3042, -1.8535]);
+  const deposit = evaluateBuildSite("mine", [43.2788083, -1.8077961]);
   const ordinaryLand = evaluateBuildSite("mine", [43.2641, -1.9748]);
   assert.equal(deposit.valid, true);
   assert.ok(deposit.geography.mineralDeposit);
@@ -28,11 +28,17 @@ test("a mine requires an explicit mineral deposit", () => {
 
 test("field and dwelling rules return explainable suitability", () => {
   const field = evaluateBuildSite("field", [43.265, -1.973]);
-  const dwellingOnDeposit = evaluateBuildSite("etxe", [43.3042, -1.8535]);
+  const dwellingOnDeposit = evaluateBuildSite("etxe", [43.2788083, -1.8077961]);
   assert.equal(field.valid, true);
   assert.match(field.reason, /suitable/i);
   assert.equal(dwellingOnDeposit.valid, false);
   assert.match(dwellingOnDeposit.reason, /dwelling/i);
+});
+
+test("historical deposits are enabled only during their evidenced campaign period", () => {
+  const coords = [43.2788083, -1.8077961];
+  assert.equal(evaluateBuildSite("mine", coords, 1100).valid, true);
+  assert.equal(evaluateBuildSite("mine", coords, 1700).valid, false);
 });
 
 test("coordinates outside the campaign are rejected explicitly", () => {

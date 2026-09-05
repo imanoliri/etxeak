@@ -12,7 +12,7 @@ The immediate goal is a coherent single-family simulation with deterministic tes
 
 ## 2. Geographic land and construction layer
 
-**In progress.** The first implementation now provides a deterministic campaign geography query with prototype terrain, elevation, slope, drainage, and mineral deposits. Etxe, field, and mine placement use distinct suitability rules, share the normal work-radius constraint, and expose transparent green/red previews with reasons. The values are still generated prototype campaign data; researched spatial data, fertility, rivers/flooding, routes, access rights, construction difficulty, and productivity modifiers remain to be added.
+**In progress.** The first implementation now provides a deterministic campaign geography query with prototype terrain, elevation, slope, and drainage plus historically sourced, date-enabled mining districts at Arditurri and Irugurutzeta. Etxe, field, and mine placement use distinct suitability rules, share the normal work-radius constraint, and expose transparent green/red previews with reasons. The non-mining terrain values and deposit radii remain prototype campaign abstractions; researched spatial data, fertility, rivers/flooding, routes, access rights, construction difficulty, and productivity modifiers remain to be added.
 
 Replace provisional manually defined build zones with a deterministic campaign geography layer that can evaluate locations independently of the visual basemap.
 

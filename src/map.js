@@ -125,8 +125,8 @@ export function showPlacementTerrain(mapContext, type, state) {
         if (renderedCells.has(cellKey)) continue;
         renderedCells.add(cellKey);
 
-        const site = evaluateBuildSite(type, coords);
-        const land = site.geography ?? getGeographyAt(coords);
+        const site = evaluateBuildSite(type, coords, state.date.year);
+        const land = site.geography ?? getGeographyAt(coords, state.date.year);
         const rectangle = window.L.rectangle(
           [[latitude, longitude], [latitude + latitudeStep, longitude + longitudeStep]],
           {

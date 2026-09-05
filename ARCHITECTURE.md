@@ -166,7 +166,9 @@ Places can have coordinates and connections/distances. Access and control are mo
 
 The implemented prototype uses `src/geography.js` as the single campaign-owned geography query boundary. A coordinate deterministically resolves to terrain/land-cover class, elevation, slope, drainage, and any configured mineral deposit. Construction asks this module for a structured suitability verdict and explanation before testing work radius or spending resources. It never infers buildability from OpenTopoMap or OpenStreetMap tiles.
 
-The current Urumea values combine configured valley/deposit anchors with deterministic interpolation and are gameplay scaffolding, not reconstructed historical GIS evidence. This boundary is deliberately replaceable by researched raster/vector campaign data later without changing simulation or UI callers. Altitude is context rather than a universal mine threshold; mines require a configured exposed deposit. During placement, the map samples the same query and renders transparent green/red cells with terrain facts and rejection reasons.
+The current Urumea terrain values combine configured valley anchors with deterministic interpolation and are gameplay scaffolding, not reconstructed historical GIS evidence. Mineral deposits are different: their point locations, resource types, active date range, evidence summary, confidence, and source URLs are explicit campaign records. The c.1100 layer currently enables Arditurri (high confidence for medieval iron extraction) and Irugurutzeta (medium confidence for the site's precise medieval attribution within the documented Aiako Harria mining landscape). The small eligibility radius around each source point is still a gameplay abstraction, not a claim about an excavated ore-body boundary.
+
+This boundary is deliberately replaceable by researched raster/vector campaign data later without changing simulation or UI callers. Altitude is context rather than a universal mine threshold; mines require a historically enabled deposit. During placement, the map samples the same query and renders transparent green/red cells with terrain facts and rejection reasons.
 
 ### Productive asset
 
