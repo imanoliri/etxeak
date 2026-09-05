@@ -61,6 +61,21 @@ These systems are larger and generally depend on multiple simulated households:
 - **Land fragmentation and consolidation:** inheritable parcels can be divided, exchanged, purchased, transferred through marriage, or recombined so property boundaries record generational history.
 - **Generational chronicle:** the game automatically composes a concise, exportable history of each house from marriages, births, deaths, construction, land transfers, occupations, migrations, conflicts, and other simulated events.
 
+## Additional simulation ideas to preserve
+
+These feature ideas complement the systems above and should remain available for future milestones:
+
+- **Fertility and household demography:** births emerge from marriage, age, household conditions, food security, mortality, and historically appropriate fertility parameters rather than from fixed scripted family sizes.
+- **Meaningful character traits:** ordinary household members remain mostly simulation-driven, while important household heads or unusually consequential individuals can acquire a small number of traits that materially affect behaviour and reputation.
+- **Player intervention budget:** the player has limited opportunities to directly influence marriages, inheritance, occupations, migration, disputes, and other major life choices, preserving the feeling of guiding a lineage rather than commanding every person.
+- **Land tenure and common rights:** distinguish private household parcels from communal woods, grazing, water, mountain pasture, and other shared resources whose access can depend on custom, status, season, or local decisions.
+- **Land quality:** soil fertility, slope, altitude, drainage, exposure, and distance affect the suitability and productivity of individual fields and pastures.
+- **Occupation-to-infrastructure links:** specialized work such as milling, smithing, mining, fishing, charcoal burning, shipbuilding, or port labour depends on appropriate workplaces, resources, geography, and available skilled workers.
+- **Local councils and assemblies:** households participate in communal decisions over roads, grazing, water, woodland, shared works, offices, dues, and local disputes, with institutions changing by period and campaign.
+- **Parish records and lifecycle ritual:** baptisms, marriages, burials, feast days, and parish record-keeping can anchor genealogy, household memory, and historical visibility without turning religion into a generic meter.
+- **Historical event layer:** wars, epidemics, price shocks, legal changes, new crops, commercial booms, industrialization, and migration waves can alter the simulation parameters and opportunities of whole regions over time.
+- **House archive:** deeds, contracts, marriage agreements, debt records, land transfers, notable possessions, and other persistent records accumulate into an inspectable documentary history of the etxe.
+
 ## Historical institutions and obligations
 
 - churches, monasteries, parishes, and ecclesiastical careers
