@@ -11,6 +11,7 @@ import {
   getResourceValue,
   getTradeYearsWithFamily
 } from "./commerce.js";
+import { ensureLivestockState, removeLivestock } from "./livestock.js";
 
 export const BASE_BRIDE_VALUE = 10;
 export const MIN_BRIDE_VALUE = 3;
@@ -35,6 +36,7 @@ export function getBrideRequiredValue(state, partnerScenarioId) {
 }
 
 export function getBridePaymentQuote(state, partnerScenarioId, paymentResource) {
+  ensureLivestockState(state);
   const resourceValue = getResourceValue(paymentResource);
   if (!resourceValue) {
     return { ok: false, message: "That resource has no household value." };
@@ -129,7 +131,14 @@ export function establishEtxeWithMarriage(
   const bride = getMarriageCandidate(state, partnerScenario);
   if (!bride) return { ok: false, message: "No marriage candidate available." };
 
-  state.stores[paymentResource] -= quote.amount;
+  if (paymentResource === "livestock") {
+    const removed = removeLivestock(state, quote.amount);
+    if (removed.length !== quote.amount) {
+      return { ok: false, message: "Not enough livestock to make the marriage payment." };
+    }
+  } else {
+    state.stores[paymentResource] -= quote.amount;
+  }
 
   man.residenceId = residence.id;
   man.headOfResidenceId = residence.id;
