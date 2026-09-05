@@ -143,7 +143,7 @@ A residence/building may be:
 
 The recognizable later baserri should not be assumed to exist in the Urumea c. 1100 campaign.
 
-### Place and land
+### Campaign geography, place, and land
 
 The world uses real geography, but the MVP does not need a full GIS simulation.
 
@@ -164,7 +164,11 @@ A Place can represent:
 
 Places can have coordinates and connections/distances. Access and control are modeled through ownership, customary rights, leases, kinship, obligations, or other campaign-specific mechanisms.
 
-MVP-0 mine eligibility uses repository-owned rocky-terrain areas from campaign data. The simulation tests a proposed coordinate against those configured areas; it never infers buildable terrain from OpenTopoMap or OpenStreetMap tiles. Altitude is not a separate hard constraint because a suitable exposed deposit can occur on a valley side as well as in high mountains. During placement, the map renders eligible rocky areas in translucent green and non-rocky terrain in translucent red, but remains a rendering layer rather than the source of truth.
+The implemented prototype uses `src/geography.js` as the single campaign-owned geography query boundary. A coordinate deterministically resolves to terrain/land-cover class, elevation, slope, drainage, and any configured mineral deposit. Construction asks this module for a structured suitability verdict and explanation before testing work radius or spending resources. It never infers buildability from OpenTopoMap or OpenStreetMap tiles.
+
+The current Urumea terrain values combine configured valley anchors with deterministic interpolation and are gameplay scaffolding, not reconstructed historical GIS evidence. Mineral deposits are different: their point locations, resource types, active date range, evidence summary, confidence, and source URLs are explicit campaign records. The c.1100 layer currently enables Arditurri (high confidence for medieval iron extraction) and Irugurutzeta (medium confidence for the site's precise medieval attribution within the documented Aiako Harria mining landscape). The small eligibility radius around each source point is still a gameplay abstraction, not a claim about an excavated ore-body boundary.
+
+This boundary is deliberately replaceable by researched raster/vector campaign data later without changing simulation or UI callers. Altitude is context rather than a universal mine threshold; mines require a historically enabled deposit. During placement, the map samples the same query and renders transparent green/red cells with terrain facts and rejection reasons.
 
 ### Productive asset
 
@@ -370,6 +374,7 @@ Historical change modifies available actions and incentives rather than awarding
 The MVP-0 implementation is deliberately lightweight and framework-free:
 
 - `src/scenarios.js` — data-driven starting families, people, initial resources, and assets;
+- `src/geography.js` — deterministic campaign bounds, landscape/deposit content, coordinate queries, and per-building suitability rules;
 - `src/livestock.js` — explicit sheep records, age/life-stage derivation, breeding-pair checks, yearly aging, additions/removals, slaughter yields, and synchronization of the aggregate livestock count;
 - `src/simulation.js` — deterministic seasonal economy, livestock lifecycle orchestration, demography, food-shortage pressure, construction, occupation restoration, and movement;
 - `src/commerce.js` — deterministic resource values, value-based trade quotes, partner production capability, geographic distance, transport cost, distinct trade-year history, and livestock transfers through the livestock domain helpers;

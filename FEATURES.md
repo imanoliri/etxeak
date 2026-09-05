@@ -29,6 +29,7 @@ Implemented on the current MVP-0 branch:
 - deterministic annual aging, simple births, and deaths;
 - resource HUD and seasonal summaries;
 - construction projects for new etxeak, fields, and rocky-terrain mines;
+- a deterministic campaign geography layer exposing prototype terrain, elevation, slope, drainage, and historically sourced mineral-deposit data for every map coordinate;
 - Builder labour progressing projects over multiple seasons, with automatic return to the worker's previous occupation when no projects remain;
 - moving people between completed etxeak;
 - value-based commerce with the unchosen family locations, including map zoom-out, production-limited exports, distance food costs, and trade-year relationship tracking;
@@ -268,16 +269,23 @@ Examples:
 
 Projects progress over seasons or years. They never complete instantly when purchased.
 
+All three current construction types query the campaign geography layer before resources are spent:
+
+- etxeak require stable, drained ground with a manageable slope and cannot occupy an exposed deposit;
+- fields require drained, gently sloped valley land;
+- mines require rocky terrain within a historically documented mining district enabled for the campaign year;
+- all projects must also be within the normal 1.5 km etxe work radius;
+- placement shows a translucent green/red suitability grid, and hovering a cell reports its terrain, prototype elevation, slope, and rejection reason; mine placement also outlines named historical districts beyond current working range so the player can plan expansion toward them.
+
 The implemented mine project is a provisional MVP-0 development option:
 
 - it costs **10 wood and 10 stone** when started;
 - it requires **10 Builder work** over one or more seasons;
-- it must be placed inside a configured **rocky terrain** area and within the normal **1.5 km etxe work radius**;
-- mine placement shows a translucent suitability overlay: configured rocky areas are green and non-rocky terrain is red, while the underlying map remains visible;
+- it must be placed on an exposed mineral deposit and within the normal **1.5 km etxe work radius**;
 - completion creates a normal mine asset, which produces **2 stone per season** when reached by an available Miner.
-- Oiartzun, Goizueta, and Tolosa begin within working distance of a rocky area; the Hernani start must expand its etxe/work-radius chain before its nearest rocky area can be worked.
+- no starting etxe is within immediate working distance of a documented mine; reaching Arditurri or Irugurutzeta requires geographic expansion through additional etxeak.
 
-Altitude is not an independent eligibility rule: the configured rock/deposit area is authoritative because suitable geology matters more than a universal elevation threshold. The rocky areas, costs, labour requirement, and output are prototype campaign/balance data rather than final historical claims.
+Altitude is visible geographic context but not an independent mine rule: the documented mining district is authoritative because suitable geology matters more than a universal elevation threshold. Arditurri is high-confidence evidence for medieval iron extraction; Irugurutzeta is marked medium-confidence because the wider Aiako Harria district is documented as medieval but the exact phase represented by the modern site is less securely dated. Site coordinates and source URLs live with the campaign data. The radius around each documented point, generated terrain/elevation/slope/drainage, costs, labour requirement, and output remain prototype gameplay abstractions rather than reconstructed historical GIS data.
 
 ## Map
 

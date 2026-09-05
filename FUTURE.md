@@ -117,7 +117,7 @@ MVP-0 has only static value-based commerce with a 5× received-value premium. Fu
 
 ## Geographic terrain and construction suitability
 
-Replace the MVP-0's small manually configured build zones with a campaign-owned geographic suitability layer. It should combine real or historically reconstructed spatial data where practical, while remaining deterministic and independent of the visual basemap.
+Expand the implemented prototype campaign geography into a researched geographic suitability layer. The current deterministic layer already exposes generated terrain, elevation, slope, and drainage plus sourced historical mining points independently of the visual basemap; it should progressively replace prototype terrain values and circular deposit extents with real or historically reconstructed spatial data where practical.
 
 Potential inputs include:
 

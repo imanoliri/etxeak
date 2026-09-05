@@ -1,6 +1,6 @@
 import { ETXE_WORK_RADIUS_KM, getResidenceCapacity, getResidencePopulation } from "./simulation.js";
 import { getScenarioProducedResources, getTradeDistanceKm, getResourceLabel } from "./commerce.js";
-import { ROCKY_TERRAIN_AREAS } from "./scenarios.js";
+import { CAMPAIGN_BOUNDS, MINERAL_DEPOSITS, evaluateBuildSite, getGeographyAt } from "./geography.js";
 
 const PLAYABLE_BOUNDS = window.L.latLngBounds(
   [42.88, -2.42],
@@ -103,55 +103,67 @@ export function createMap(onMapClick) {
   return { map, gameLayer, previewLayer, commerceLayer, placementLayer };
 }
 
-export function showPlacementTerrain(mapContext, type) {
+export function showPlacementTerrain(mapContext, type, state) {
   mapContext.placementLayer.clearLayers();
-  if (type !== "mine") return;
+  window.L.rectangle(
+    [[CAMPAIGN_BOUNDS.south, CAMPAIGN_BOUNDS.west], [CAMPAIGN_BOUNDS.north, CAMPAIGN_BOUNDS.east]],
+    { stroke: false, fillColor: "#b5433f", fillOpacity: 0.16, interactive: false }
+  ).addTo(mapContext.placementLayer);
 
-  const outerBoundary = [
-    [PLAYABLE_BOUNDS.getSouth(), PLAYABLE_BOUNDS.getWest()],
-    [PLAYABLE_BOUNDS.getNorth(), PLAYABLE_BOUNDS.getWest()],
-    [PLAYABLE_BOUNDS.getNorth(), PLAYABLE_BOUNDS.getEast()],
-    [PLAYABLE_BOUNDS.getSouth(), PLAYABLE_BOUNDS.getEast()]
-  ];
-  const rockyHoles = ROCKY_TERRAIN_AREAS.map((area) =>
-    circleBoundary(area.center, area.radiusKm)
-  );
+  const latitudeStep = 0.002;
+  const longitudeStep = 0.0025;
+  const renderedCells = new Set();
 
-  window.L.polygon([outerBoundary, ...rockyHoles], {
-    stroke: false,
-    fillColor: "#b5433f",
-    fillOpacity: 0.2,
-    fillRule: "evenodd",
-    interactive: false
-  }).addTo(mapContext.placementLayer);
+  for (const residence of state?.residences ?? []) {
+    const latitudeRange = ETXE_WORK_RADIUS_KM / 110.574;
+    const longitudeRange = ETXE_WORK_RADIUS_KM / (111.32 * Math.cos((residence.coords[0] * Math.PI) / 180));
+    for (let latitude = residence.coords[0] - latitudeRange; latitude <= residence.coords[0] + latitudeRange; latitude += latitudeStep) {
+      for (let longitude = residence.coords[1] - longitudeRange; longitude <= residence.coords[1] + longitudeRange; longitude += longitudeStep) {
+        const coords = [latitude + latitudeStep / 2, longitude + longitudeStep / 2];
+        if (window.L.latLng(coords).distanceTo(window.L.latLng(residence.coords)) > ETXE_WORK_RADIUS_KM * 1000) continue;
+        const cellKey = `${Math.round(latitude / latitudeStep)},${Math.round(longitude / longitudeStep)}`;
+        if (renderedCells.has(cellKey)) continue;
+        renderedCells.add(cellKey);
 
-  ROCKY_TERRAIN_AREAS.forEach((area) => {
-    const circle = window.L.circle(area.center, {
-      radius: area.radiusKm * 1000,
-      color: "#2f7441",
-      weight: 2,
-      opacity: 0.9,
-      fillColor: "#4b9b5d",
-      fillOpacity: 0.3,
-      dashArray: "6 5",
-      interactive: false
-    });
-    circle.bindTooltip(`${area.name} · rocky terrain`, { direction: "top" });
-    circle.addTo(mapContext.placementLayer);
-  });
-}
+        const site = evaluateBuildSite(type, coords, state.date.year);
+        const land = site.geography ?? getGeographyAt(coords, state.date.year);
+        const rectangle = window.L.rectangle(
+          [[latitude, longitude], [latitude + latitudeStep, longitude + longitudeStep]],
+          {
+            stroke: false,
+            fillColor: site.valid ? "#4b9b5d" : "#b5433f",
+            fillOpacity: site.valid ? 0.34 : 0.24,
+            interactive: true
+          }
+        );
+        rectangle.bindTooltip(`${site.valid ? "Suitable" : "Unsuitable"} · ${land.terrain} · ${land.elevationM ?? "?"} m · slope ${land.slopePercent ?? "?"}%<br>${site.reason}`);
+        rectangle.addTo(mapContext.placementLayer);
+      }
+    }
+  }
 
-function circleBoundary([latitude, longitude], radiusKm, points = 64) {
-  const latitudeRadius = radiusKm / 110.574;
-  const longitudeRadius = radiusKm / (111.32 * Math.cos((latitude * Math.PI) / 180));
-
-  return Array.from({ length: points }, (_, index) => {
-    const angle = (index / points) * Math.PI * 2;
-    return [
-      latitude + Math.sin(angle) * latitudeRadius,
-      longitude + Math.cos(angle) * longitudeRadius
-    ];
-  });
+  if (type === "mine") {
+    for (const deposit of MINERAL_DEPOSITS) {
+      if (state.date.year < deposit.activeFromYear || state.date.year > deposit.activeToYear) continue;
+      const inReach = state.residences.some(
+        (residence) => window.L.latLng(deposit.center).distanceTo(window.L.latLng(residence.coords)) <= ETXE_WORK_RADIUS_KM * 1000
+      );
+      const circle = window.L.circle(deposit.center, {
+        radius: deposit.radiusKm * 1000,
+        color: inReach ? "#2f7441" : "#8b5e20",
+        weight: 2,
+        opacity: 0.95,
+        fillColor: inReach ? "#4b9b5d" : "#b5433f",
+        fillOpacity: inReach ? 0.34 : 0.25,
+        dashArray: "6 5",
+        interactive: true
+      });
+      circle.bindTooltip(
+        `<strong>${deposit.name}</strong> · ${deposit.confidence} confidence<br>${deposit.evidence}<br>${inReach ? "Within working range." : `Outside the ${ETXE_WORK_RADIUS_KM} km work radius; expand toward this site.`}`
+      );
+      circle.addTo(mapContext.placementLayer);
+    }
+  }
 }
 
 export function clearPlacementTerrain(mapContext) {
